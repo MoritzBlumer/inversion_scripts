@@ -13,8 +13,30 @@
 ## Usage
 
 ### Preparing a genotype matrix from a VCF file
+```
+chrom   pos     ref     alt     ind_1   ind_2   ind_3   ind_4   ind_5   ind_6
+chr1    478     G       A       0       0       0       0       1       0
+chr1    484     C       T       0       0       0       0       2       0
+chr1    485     G       A       1       0       0       0       0       0
+chr1    1221    C       T       0       0       0       0       0       0
+chr1    1222    G       A       0       0       1       0       0       0
+chr1    1223    C       T       0       0       0       0       0       0
+chr1    1224    T       G       0      -1       0       0       2       0
+chr1    1225    T       C       0       0       0       0       0       0
+chr1    1234    G       A       0       0       0       0       0       0
+```
+
 
 ### Preparing a metadata file
+``` 
+id  coverage    genus   species         
+ind_1  16.4    AstCal  Astatotilapia   calliptera      M       Lake_Malombe    Chimwala
+ind_2  AstCal  Astatotilapia   calliptera      M       Lake_Malombe    Chimwala
+ind_3  AstCal  Astatotilapia   calliptera      M       Lake_Malombe    Chimwala
+ind_4  AstCal  Astatotilapia   calliptera      M       Lake_Malombe    Chimwala
+ind_5  AstCal  Astatotilapia   calliptera      M       Lake_Malombe    Chimwala
+ind_6  AstCal  Astatotilapia   calliptera      M       Southwest_arm   Msaka
+```
 
 ### Running windowed_pca.py
 The python script requires 13 positional arguments, which are explained in more detail below:
