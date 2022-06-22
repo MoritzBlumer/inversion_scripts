@@ -2,16 +2,10 @@
 #
 # Moritz Blumer | 2021-12-07
 #
-# Script that does sliding window PCA using scikit-allel and produces three outputs, each with an 
-# HTML plot, a PDF plot and a TSV  with the corresponding values:
-# 1) Sliding window PCA for PC1
-# 2) % of variance explained per window (PC1)
-# 3) # of variants per window
+# Conduct sliding window PCA using scikit-allel 
 #
-# It is easy to add PC2 output as well, but it has not been useful for inversions and is therefore 
-# commented out (search for '# uncomment for PC 2')
-#
-# the minimum number of variants per window to do a PCA default is 300 (otherwise NA will be returned, change value below)
+# To add PC2 output, but it uncomment lines tagged with '# uncomment for PC 2'
+# The minimum number of variants per window is set to 300 and can be changed below (otherwise NA will be returned)
 min_var_per_window = 300
 
 
@@ -48,7 +42,7 @@ def parse_arguments():
 
     if len(sys.argv) != 13:
         print('\nUsage:', file=sys.stderr)
-        print('\tpython windowed_pca.py <genotype matrix> <metadata> <chromosome name> <chromosome length> <window size> <window step size> <taxonomic unit> <target taxon> \ \n                         <color taxonomic unit> <variance threshold> <mean threshold> <output prefix>\n', file=sys.stderr)
+        print('\tpython windowed_pca.py <genotype matrix> <metadata> <chromosome name> <chromosome length> <window size> <window step size> <filter column name> <filter column value> \ \n                         <color column name> <variance threshold> <mean threshold> <output prefix>\n', file=sys.stderr)
         print('\t\t<genotype matrix>\tstr\tpath to the genotype matrix file produced as described in the README', file=sys.stderr)
         print('\t\t<metadata>\t\tstr\tpath to the metadata file produced as described in the README', file=sys.stderr)
         print('\t\t<output prefix>\t\tstr\tprefix that will be used for all output files, can also be a directory to be created', file=sys.stderr)
@@ -56,9 +50,9 @@ def parse_arguments():
         print('\t\t<chromosome length>\tint\tlength of the chromosome in bp, e.g. "32123123"', file=sys.stderr)
         print('\t\t<window size>\t\tint\tsize of the sliding window in bp, e.g. "1000000"', file=sys.stderr)
         print('\t\t<window step>\t\tint\tstep size of the sliding window in bp, e.g. "10000"', file=sys.stderr)
-        print('\t\t<taxonomic unit>\tstr\ttaxonomic unit (must be a column in the metadata) to be used for filtering the genotype matrix, e.g. "clade"', file=sys.stderr)
-        print('\t\t<target taxon>\t\tstr\ttarget taxon to use, e.g. "Utaka", but can also be a comma separated list of taxa, e.g. "Utaka,Benthic"', file=sys.stderr)
-        print('\t\t<color taxonomic unit>\tstr\ttaxonomic unit used to color the plot with distinct colors, e.g. "genus". If specifying a comma separated list \n\t\t\t\t\t\tlist (e.g. "genus,species"), separate plots that only differ in coloration will be produced for each unit', file=sys.stderr)
+        print('\t\t<filter column name>\tstr\tset a metadata column name to be used to select individuals to be included in the analysis e.g. "genus" (see filter column value)', file=sys.stderr)
+        print('\t\t<filter column value>\t\tstr\tselect a value to be filtered for in the defined filter column. Setting <filter column name> to "genus" and <filter column value> to "Homo" would include all individuals of the genus Homo in the output, and ignore all others. A comma-separated list of include values can be provided, to include for example a specific subset of genera ("Homo,Pan") ', file=sys.stderr)
+        print('\t\t<color column name>\tstr\tselect a metadata column that will serve to partition included individuals into color groups in the output plots. If selecting e.g. "genus", all individuals from the same genus will have the same color in the output plots. If specifying a comma-separated list of column names (e.g. "genus,species"), two versions of each output plot will be produced, that differ only in the color scheme', file=sys.stderr)
         print('\t\t<variance threshold>\tint\trelevant to correct random switching along PC axes, see code for details, if unsure, use "9"', file=sys.stderr)
         print('\t\t<mean threshold>\tint\trelevant to correct random switching along PC axes, see code for details, if unsure, use "3"\n', file=sys.stderr)
         sys.exit()
