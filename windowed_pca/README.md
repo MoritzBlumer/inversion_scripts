@@ -12,8 +12,16 @@
 
 ## Usage
 
-### Preparing a genotype matrix from a VCF file
+### Preparing a genotype matrix from a VCF file (biallelic SNPs)
 ```
+sample_vcf=sample.vcf.gz
+genotype_matrix=genotype_matrix.tsv
+bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 's|0/1|1|g' | sed 's|1/0|1|g' > $genotype_matrix
+bgzip -@ 10 $genotype_matrix
+```
+
+```
+zcat ${genotype_matrix}.gz
 chrom   pos     ref     alt     ind_1   ind_2   ind_3   ind_4   ind_5   ind_6
 chr1    478     G       A       0       0       0       0       1       0
 chr1    484     C       T       0       0       0       0       2       0
