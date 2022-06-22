@@ -28,14 +28,14 @@ chr1    1234    G       A       0       0       0       0       0       0
 
 
 ### Preparing a metadata file
-``` 
-id  coverage    genus   species         
-ind_1  16.4    AstCal  Astatotilapia   calliptera      M       Lake_Malombe    Chimwala
-ind_2  AstCal  Astatotilapia   calliptera      M       Lake_Malombe    Chimwala
-ind_3  AstCal  Astatotilapia   calliptera      M       Lake_Malombe    Chimwala
-ind_4  AstCal  Astatotilapia   calliptera      M       Lake_Malombe    Chimwala
-ind_5  AstCal  Astatotilapia   calliptera      M       Lake_Malombe    Chimwala
-ind_6  AstCal  Astatotilapia   calliptera      M       Southwest_arm   Msaka
+```
+primary_id  simple_id   supplier_id seq_depth   clade   genus           species     sex location        sublocation 
+ind_1       CalMal1     D19-E05     16.4        AstCal  Astatotilapia   calliptera  M   Lake_Malombe    Chimwala
+ind_2       CalMal2     D19-E06     17.9        AstCal  Astatotilapia   calliptera  M   Lake_Malombe    Chimwala
+ind_3       CalMal3     D19-E07     18.9        AstCal  Astatotilapia   calliptera  M   Lake_Malombe    Chimwala
+ind_4       CalMal4     D19-E08     18.1        AstCal  Astatotilapia   calliptera  M   Lake_Malombe    Chimwala
+ind_5       CalMal5     D19-E09     16.6        AstCal  Astatotilapia   calliptera  M   Lake_Malombe    Chimwala
+ind_6       CalMsk1     D22-G01     17.5        AstCal  Astatotilapia   calliptera  M   Southwest_arm   Msaka
 ```
 
 ### Running windowed_pca.py

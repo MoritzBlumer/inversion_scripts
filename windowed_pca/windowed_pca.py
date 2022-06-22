@@ -77,7 +77,7 @@ def prepare_data(gt_matrix_path, metadata_path, taxon=None, group=None):
 
     # read in metadata and genus to species column for easier filtering
 
-    metadata_df = pd.read_csv(metadata_path, sep='\t', header=None, names=['primary_id', 'simple_id', 'supplier_id', 'seq_depth', 'clade', 'genus', 'species', 'sex', 'location', 'sublocation'])
+    metadata_df = pd.read_csv(metadata_path, sep='\t')
 
     metadata_df['species'] = metadata_df['genus'] + '_' + metadata_df['species']
 
