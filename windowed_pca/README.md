@@ -35,12 +35,10 @@ bcftools view -h $sample_vcf | awk '$1=="#CHROM"' | cut -f 1,2,4,5,10- | tr -d '
 # - keep only biallelic snps that passed all filters
 # - drop unnecessary VCF info (FORMAT, INFO columns)
 bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 's|0/1|1|g' | sed 's|1/0|1|g' | gzip -c >> $genotype_matrix
-
-# have a look at the first columns of the matrix
+```
+Have a look at the first columns of the matrix
+```
 zcat ${genotype_matrix}.gz | head -n 15
-```
-
-```
 CHROM   POS     REF     ALT     ind_1   ind_2   ind_3   ind_4   ind_5   ind_6   ind_7   ind_8   ind_9
 chr1    10156   A       T       0       0       0       0       0       0       0       0       0
 chr1    12814   A       G       0       0       0       0       0       0       0       0       0
