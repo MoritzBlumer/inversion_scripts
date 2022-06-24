@@ -20,17 +20,20 @@ The below instructions function as a tutorial (after cloning the repo and instal
 
 ### Preparing a genotype matrix from a VCF file (biallelic SNPs)
 ```
-# define a list of samples to be included in the genotype matrix (sample ids must be a subset of ids in the input VCF)
-sample_ids="ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9"
-
 # set $sample_vcf and $genotype_matrix variables
 sample_vcf=test_dataset/input/sample.vcf.gz
 genotype_matrix=test_dataset/input/genotype_matrix.tsv.gz
 
-# generate the header for $genotype_matrix from $sample_vcf
+# define a list of samples to be included in the genotype matrix (samples must be subset of input VCF samples)
+sample_ids="ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9"
+
+# derive header for $genotype_matrix from $sample_vcf
 bcftools view -h $sample_vcf | awk '$1=="#CHROM"' | cut -f 1,2,4,5,10- | tr -d '#' | gzip -c > $genotype_matrix
 
-# convert VCF rows to $genotype_matrix format (keep only lines without missing genotype calls, keep only biallelic snps that passed all filters, drop unnecessary info)
+# convert VCF rows to $genotype_matrix rows 
+# - keep only lines without missing genotype calls
+# - keep only biallelic snps that passed all filters
+# - drop unnecessary VCF info (FORMAT, INFO columns)
 bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 's|0/1|1|g' | sed 's|1/0|1|g' | gzip -c >> $genotype_matrix
 ```
 
