@@ -1,7 +1,7 @@
 # Conduct PCAs in in genomic windows (using scikit-allel)
 - useful to explore the divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
 - generates PDF and interactive HTML plots (using plotly)
-- requires a genotype matrix (0,1,2,-1) and a metadata file (details below)
+- input files: genotype matrix (easy to obtain from VCF) and a metadata file (details below)
 
 ## Python dependencies
 - scikit-allel (https://anaconda.org/conda-forge/scikit-allel)
@@ -14,36 +14,54 @@
 
 ### Preparing a genotype matrix from a VCF file (biallelic SNPs)
 ```
-sample_vcf=sample.vcf.gz
-genotype_matrix=genotype_matrix.tsv
-bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 's|0/1|1|g' | sed 's|1/0|1|g' > $genotype_matrix
-bgzip -@ 10 $genotype_matrix
+# keep only biallelic SNP sites without missing data, with PASS filter set
+keep_samples="ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9"
+sample_vcf=test_dataset/input/sample.vcf.gz
+genotype_matrix=test_dataset/input/genotype_matrix.tsv
+bcftools view -h $sample_vcf | awk '$1=="#CHROM"' | cut -f 1,2,4,5,10- | tr -d '#' > $genotype_matrix
+bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 's|0/1|1|g' | sed 's|1/0|1|g' >> $genotype_matrix
+gzip ${genotype_matrix}
 ```
 
 ```
-zcat ${genotype_matrix}.gz
-chrom   pos     ref     alt     ind_1   ind_2   ind_3   ind_4   ind_5   ind_6
-chr1    478     G       A       0       0       0       0       1       0
-chr1    484     C       T       0       0       0       0       2       0
-chr1    485     G       A       1       0       0       0       0       0
-chr1    1221    C       T       0       0       0       0       0       0
-chr1    1222    G       A       0       0       1       0       0       0
-chr1    1223    C       T       0       0       0       0       0       0
-chr1    1224    T       G       0      -1       0       0       2       0
-chr1    1225    T       C       0       0       0       0       0       0
-chr1    1234    G       A       0       0       0       0       0       0
+zcat ${genotype_matrix}.gz | head -n 15
+```
+
+```
+CHROM   POS     REF     ALT     ind_1   ind_2   ind_3   ind_4   ind_5   ind_6   ind_7   ind_8   ind_9
+chr1    10156   A       T       0       0       0       0       0       0       0       0       0
+chr1    12814   A       G       0       0       0       0       0       0       0       0       0
+chr1    12895   G       A       0       0       0       0       0       0       0       0       0
+chr1    12957   G       A       0       0       0       0       0       0       0       0       0
+chr1    55607   A       T       0       0       0       0       0       0       0       0       0
+chr1    55728   A       T       0       0       0       0       0       0       0       0       0
+chr1    55963   G       A       0       0       0       0       0       0       0       0       0
+chr1    56234   A       G       0       0       0       0       0       0       0       0       0
+chr1    56469   C       T       0       0       0       0       0       0       0       0       0
+chr1    56724   T       C       2       1       1       1       0       0       2       2       1
+chr1    56796   G       A       0       0       0       0       0       0       0       0       0
+chr1    57369   C       T       0       0       0       0       0       0       0       0       0
+chr1    57650   G       A       0       0       0       0       0       0       0       0       0
+chr1    57865   A       C       0       0       0       0       0       0       0       0       0
 ```
 
 
 ### Preparing a metadata file
 ```
-primary_id  simple_id   supplier_id seq_depth   clade   genus           species     sex location        sublocation 
-ind_1       CalMal1     D19-E05     16.4        AstCal  Astatotilapia   calliptera  M   Lake_Malombe    Chimwala
-ind_2       CalMal2     D19-E06     17.9        AstCal  Astatotilapia   calliptera  M   Lake_Malombe    Chimwala
-ind_3       CalMal3     D19-E07     18.9        AstCal  Astatotilapia   calliptera  M   Lake_Malombe    Chimwala
-ind_4       CalMal4     D19-E08     18.1        AstCal  Astatotilapia   calliptera  M   Lake_Malombe    Chimwala
-ind_5       CalMal5     D19-E09     16.6        AstCal  Astatotilapia   calliptera  M   Lake_Malombe    Chimwala
-ind_6       CalMsk1     D22-G01     17.5        AstCal  Astatotilapia   calliptera  M   Southwest_arm   Msaka
+cat test_dataset/input/metadata.tsv
+```
+
+```
+primary_id      coverage        species inversion_state
+ind_1   20X     species_1       inverted
+ind_2   21X     species_1       inverted
+ind_3   20X     species_1       inverted
+ind_4   21X     species_1       heterozygous
+ind_5   19X     species_1       heterozygous
+ind_6   19X     species_1       heterozygous
+ind_7   18X     species_2       uninverted
+ind_8   26X     species_2       uninverted
+ind_9   18X     species_2       uninverted
 ```
 
 ### Running windowed_pca.py
@@ -71,6 +89,11 @@ python sw_pca.py <genotype matrix> <metadata> <chromosome name> <chromosome leng
 
 #### Example prompt 
 ```
-python3 sw_pca.py test/input/test_gt_matrix.tsv.gz test/input/test_metadata.tsv test/results/output_prefix chr1 1000000 100000 10000 $taxon $group genus,species,location,primary_id 9 3
+python3 windowed_pca.py ${genotype_matrix}.gz test_dataset/input/metadata.tsv test_dataset/output/ chr1 35000000 5000000 10000 primary_id $keep_samples primary_id 9 3
 ```
 
+
+#### Notes:
+- genotype matrix: REF/ALT fields are not used, they can be filled with dummy data
+- all columns in metadata will be included in hover display in HTML plots
+- add description of output files

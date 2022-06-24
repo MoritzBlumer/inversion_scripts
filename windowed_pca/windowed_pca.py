@@ -2,12 +2,15 @@
 #
 # Moritz Blumer | 2021-12-07
 #
-# Conduct sliding window PCA using scikit-allel 
-#
-# To add PC2 output, but it uncomment lines tagged with '# uncomment for PC 2'
-# The minimum number of variants per window is set to 300 and can be changed below (otherwise NA will be returned)
-min_var_per_window = 300
+# Conduct sliding window PCA with scikit-allel 
 
+
+
+# To add PC2 output, but it uncomment lines tagged with '# uncomment for PC 2'
+
+
+# The minimum number of variants per window is set to 300 and can be changed below (otherwise NA will be returned)
+min_var_per_window = 100
 
 
 # import packages
@@ -79,7 +82,10 @@ def prepare_data(gt_matrix_path, metadata_path, taxon=None, group=None):
 
     metadata_df = pd.read_csv(metadata_path, sep='\t')
 
-    metadata_df['species'] = metadata_df['genus'] + '_' + metadata_df['species']
+
+    # re-name first column to 'primary_id' (this is the only required column and must have unique ids)
+
+    metadata_df.columns.values[0] = 'primary_id'
 
 
     # subset input samples to match taxon group specification if specified
@@ -147,7 +153,7 @@ def prepare_data(gt_matrix_path, metadata_path, taxon=None, group=None):
 
     # convert to array
 
-    print('\n[INFO] Converting to numpy array (this can take minutes)', file=sys.stderr)
+    print('\n[INFO] Converting to numpy array (this can take minutes)\n', file=sys.stderr)
 
     gt_arr = np.array(rows, dtype=np.int8) # change to np.int8
 
@@ -160,7 +166,7 @@ def prepare_data(gt_matrix_path, metadata_path, taxon=None, group=None):
 
 
 
-def compile_windo_arrays(chrom_len, window_size, window_step):
+def compile_window_arrays(chrom_len, window_size, window_step):
     '''
     returns three arrays based on the specified chromosome length and window parameters: 1. window starts, 2. window ends, 3. window mids
     '''
@@ -247,73 +253,102 @@ def calibrate_annotate(pc_df, metadata_df, pc, var_threshold=9, mean_threshold=3
 
     # select the 9 samples with the least variance, and from those the 3 with the highest absolute value accross 
     # all windows as guide samples to calibrate the orientation of all windows
+
     guide_samples = list(pc_df.dropna(axis=1).abs().var(axis=1).sort_values(ascending=True).index[0:var_threshold])
+    
     guide_samples_df = pc_df.loc[guide_samples]
+    
     guide_samples = list(guide_samples_df.dropna(axis=1).abs().sum(axis=1).sort_values(ascending=False).index[0:mean_threshold])
+    
     guide_samples_df = guide_samples_df.loc[guide_samples]
 
+    
     # for each guide sample, determine whether the positive or negative absolute value of each window is closer 
     # to the value in the previous window. If the negative value is closer, switch that windows orientation
     # (1 --> switch, 0 --> keep)
+    
     rows_lst = []
+    
     for row in guide_samples_df.iterrows():
+    
         row = list(row[1])
+    
         last_window = row[0] if not row[0] == None else 0 # only if the first window is None, last_window can be None, in that case set it to 0 to enable below numerical comparisons
+    
         out = [0]
+    
         for window in row[1:]:
+    
             if window == None:
+    
                 out.append(0)
+    
                 continue
+    
             elif abs(window - last_window) > abs(window - (last_window*-1)):
+    
                 out.append(1)
+    
                 last_window = (window*-1)
+    
             else:
+    
                 out.append(-1)
+    
                 last_window = window
+    
         rows_lst.append(out)
 
+
     # sum up values from each row and save to switch_lst
+
     rows_arr = np.array(rows_lst, dtype=int).transpose()
+
     switch_lst = list(rows_arr.sum(axis=1))
 
+
     # switch individual windows according to switch_lst (switch if value is negative)
+
     for idx, val in zip(list(pc_df.columns), switch_lst):
+
         if val < 0:
+
             pc_df[idx] = pc_df[idx]*-1
 
+
     # switch Y axis if largest absolute value is negative
+
     if abs(pc_df.to_numpy(na_value=0).min()) > abs(pc_df.to_numpy(na_value=0).max()):
+
         pc_df = pc_df * -1
 
+
     # annotate with metadata
-    pc_df['primary_id'] = list(metadata_df['primary_id'])
-    pc_df['species'] = list(metadata_df['species'])
-    pc_df['genus'] = list(metadata_df['genus'])
-    pc_df['clade'] = list(metadata_df['clade'])
-    pc_df['location'] = list(metadata_df['location'])
-    pc_df['sublocation'] = list(metadata_df['sublocation'])
-    pc_df['supplier_id'] = list(metadata_df['supplier_id'])
-    pc_df['sex'] = list(metadata_df['sex'])
-    pc_df['seq_depth'] = list(metadata_df['seq_depth'])
+
+    for column_name in metadata_df.columns:
+
+        pc_df[column_name] = list(metadata_df[column_name])
+
 
     # replace numpy NaN with 'NA' for plotting (hover_data display)
     pc_df = pc_df.replace(np.nan, 'NA')
-    
+
+
     # convert to long format for plotting
-    pc_df = pd.melt(pc_df, id_vars=['primary_id', 'species', 'genus', 'clade', 'location', 'sublocation', 'sex', 'seq_depth', 'supplier_id'], var_name='window_mid', value_name=pc)
+    pc_df = pd.melt(pc_df, id_vars=metadata_df.columns, var_name='window_mid', value_name=pc)
 
     return pc_df
 
 
 
-def plot_pc(pc_df, pc, color_taxon, chrom, chrom_len, window_size, window_step):
+def plot_pc(pc_df, pc, metadata_df, color_taxon, chrom, chrom_len, window_size, window_step):
     
     '''
     Plot one PC for all included sampled along the chromosome
     '''
 
     fig = px.line(pc_df, x='window_mid', y=pc, line_group='primary_id', color=color_taxon, hover_name='primary_id', 
-                    hover_data={'window_mid': False, 'species': True, 'genus': True, 'clade': True, 'location': True, 'sublocation': True, 'sex': True, 'seq_depth': True, 'supplier_id': True, 'primary_id': False, pc: False}, 
+                    hover_data=list(metadata_df.columns), 
                     width=chrom_len/20000, height=500,
                     title=str('<b>Windowed PCA of ' + chrom + '</b><br> (chromosome length: ' + str(chrom_len) + ' bp, window size: ' + str(window_size) + ' bp, window step: ' + str(window_step) + ' bp)'), 
                     labels = dict(pc_1 = '<b>PC 1<b>', pc_2 = '<b>PC 2<b>', window_mid = '<b>Genomic position<b>'))
@@ -325,8 +360,6 @@ def plot_pc(pc_df, pc, color_taxon, chrom, chrom_len, window_size, window_step):
                     title={'xanchor': 'center', 'y': 0.9, 'x': 0.45})
 
     fig.update_traces(line=dict(width=0.5))
-
-    #fig.show()
 
     return fig
 
@@ -358,7 +391,7 @@ def plot_additional_info(additional_info_df, chrom, chrom_len, window_size, wind
 
 
 
-def save_results(additional_info_df, pc_1_df, pc_2_plot=None):
+def save_results(metadata_df, additional_info_df, pc_1_df, pc_2_plot=None):
     '''
     plotting and saving results (HTMLs, PDFs, TSVs)
     '''
@@ -366,12 +399,12 @@ def save_results(additional_info_df, pc_1_df, pc_2_plot=None):
 
     for c_taxon in color_taxon.split(','):
 
-        pc_1_plot = plot_pc(pc_1_df, 'pc_1', c_taxon, chrom, chrom_len, window_size, window_step)
+        pc_1_plot = plot_pc(pc_1_df, 'pc_1', metadata_df, c_taxon, chrom, chrom_len, window_size, window_step)
         pc_1_plot.write_html(str(output_prefix + chrom + '.pc_1.' + str(c_taxon) + '.html').lower())
         pc_1_plot.write_image(str(output_prefix + chrom + '.pc_1.' + str(c_taxon) + '.pdf').lower(), engine='kaleido', scale=2.4)
         pc_1_df.to_csv(str(output_prefix + chrom + '.pc_1.tsv').lower(), sep='\t', index=False)
 
-        # pc_2_plot = plot_pc(pc_2_df, 'pc_1', c_taxon, chrom, chrom_len, window_size, window_step)                                  # uncomment for PC 2
+        # pc_2_plot = plot_pc(pc_2_df, 'pc_2', metadata_df, c_taxon, chrom, chrom_len, window_size, window_step)                     # uncomment for PC 2
         # pc_2_plot.write_html(str(output_prefix + chrom + '.pc_2.' + str(c_taxon) + '.html').lower())                               # uncomment for PC 2
         # pc_2_plot.write_image(str(output_prefix + chrom + '.pc_2.' + str(c_taxon) + '.pdf).lower()', engine='kaleido', scale=2.4)  # uncomment for PC 2
         # pc_2_df.to_csv(str(output_prefix + chrom + '.pc_2.tsv').lower(), sep='\t', index=False)                                    # uncomment for PC 2
@@ -413,7 +446,7 @@ def main():
 
         # compile window position arrays
 
-        window_start_arr, windows_stop_arr, windows_mid_arr = compile_windo_arrays(chrom_len, window_size, window_step)
+        window_start_arr, windows_stop_arr, windows_mid_arr = compile_window_arrays(chrom_len, window_size, window_step)
 
 
         # load genotype array for specified samples and chromosome into memory (this usually takes some time)
@@ -456,8 +489,8 @@ def main():
 
     # plot and save HTML and PDF plots and TSVs
 
-    save_results(additional_info_df, pc_1_df)
-    # save_results(additional_info_df, pc_1_df, pc_2_df) # uncomment for PC 2
+    save_results(metadata_df, additional_info_df, pc_1_df)
+    # save_results(metadata_df, additional_info_df, pc_1_df, pc_2_df) # uncomment for PC 2
 
 
     # print INFO
