@@ -9,8 +9,8 @@
 # To add PC2 output, but it uncomment lines tagged with '# uncomment for PC 2'
 
 
-# The minimum number of variants per window is set to 300 and can be changed below (otherwise NA will be returned)
-min_var_per_window = 100
+# The minimum number of variants per window is set to 50 and can be changed below (otherwise NA will be returned)
+min_var_per_window = 50
 
 
 # import packages
