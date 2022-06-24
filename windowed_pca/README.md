@@ -63,7 +63,7 @@ chr1    57865   A       C       0       0       0       0       0       0       
 ### Preparing a metadata file
 A metadata file is required to provide annotation for the HTML plots, and can also be used to control which samples to include in the windowed PCA analysis, and to assign groups that will have the same color in the plots.
 The minimum requirement for the metadata file is that the first column contains unique identifiers for each sample, and is called 'primary_id'. All additional fields are optional.
-An example metadata file is provided:
+An example metadata file, which in addition to the primary_id contains info on sequencing coverage, species and inversion state of each sample, is provided:
 ```
 cat test_dataset/input/metadata.tsv
 primary_id      coverage        species inversion_state
@@ -82,7 +82,7 @@ ind_9   18X     species_2       uninverted
 The python script requires 13 positional arguments, which are explained in more detail below:
 
 ```
-python sw_pca.py <genotype matrix> <metadata> <output prefix> <chromosome name> <chromosome length> <window size> <window step size> <filter column name> <filter column value> <color column name> <variance threshold> <mean threshold>
+python3 sw_pca.py <genotype matrix> <metadata> <output prefix> <chromosome name> <chromosome length> <window size> <window step size> <filter column name> <filter column value> <color column name> <variance threshold> <mean threshold>
 ```
 
 | Argument | Type | Description |
@@ -102,6 +102,7 @@ python sw_pca.py <genotype matrix> <metadata> <output prefix> <chromosome name> 
 
 
 #### Sample prompt 
+In the below example, the described genotype matrix (test_dataset/input/genotype_matrix.tsv.gz) and metadata file (test_dataset/input/metadata.tsv) are used as input. 'test_dataset/output/' is set as the output prefix, which tells the script to make a new output directory 'test_dataset/output/' (if it doesn't exist), and to create all output files therein. 'chr1' and '35000000' are set for chromosome name and chromosome length. window size is set to 1 Mbp ('1000000'), because the sample dataset is downsampled to 10% of the original data, and a relatively large window size is required to have enough (>100) variants per window. Step size is set to 100,000 bp ('100000'), resulting in overlapping windows. <filter column name> is set to 'primary_id' and <filter column value> to the previously defined $sample_ids variable to provide a list of samples to include. Since $sample_ids contains all samples in the metadata, all samples are included. To include e.g. only samples from species_1, set <filter column value> to 'species' and <filter column name> to 'species_1'.
 ```
 python3 windowed_pca.py $genotype_matrix test_dataset/input/metadata.tsv test_dataset/output/ chr1 35000000 1000000 10000 primary_id $sample_ids primary_id 9 3
 ```
@@ -112,4 +113,9 @@ python3 windowed_pca.py $genotype_matrix test_dataset/input/metadata.tsv test_da
 
 #### Notes:
 - genotype matrix: REF/ALT fields are not used, they can be populated with dummy data
-- all columns in metadata will be included in hover display in HTML plots
+- Any biallelic variants can be used as lng as the are encoded as 0 (hom ref), 1 (het), 2 (hom alt). I have used InDels smaller 20 bp before and got nice results
+- All columns in metadata will be included in hover display in HTML plots
+- If output files (TSVs) from a previous run are detected (same output prefix), they will be reused for plitting instead of calculating new ones. This is useful to adjust the color scheme of the plots. To rerun everything from scratch, delete any existing output files.
+- The threshold for the minimum number of SNPs per window is 100 and can be adjusted in the script. The lower the threshold, the noisier the plots.
+- By default, plots are only produced for PC1, but it is easy to enable the creation of PC2 plots as well (takes 1 minute, see script for instructions)
+- please contact me if you have any questions or run into problems
