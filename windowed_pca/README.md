@@ -15,8 +15,8 @@
 
 ## Usage
 
-After cloning the repo and installing the dependencies, all the below steps can be conducted and function as a tutorial.
-'test_data' contains a sample VCF file (test_data/input/sample_vcf.gz) and a corresponding metadata file (test_data/input/metadata.tsv). Following the instructions below guides the user through all necessary steps from preparing a genotype matrix to running the windowed_pca.py script.
+The below instructions function as a tutorial (after cloning the repo and installing the dependencies).
+'test_data' contains a sample VCF file ('test_data/input/sample_vcf.gz') and a corresponding metadata file ('test_data/input/metadata.tsv'). The instructions below guide the user through all necessary steps from preparing a genotype matrix to running the windowed_pca.py script.
 
 ### Preparing a genotype matrix from a VCF file (biallelic SNPs)
 ```
