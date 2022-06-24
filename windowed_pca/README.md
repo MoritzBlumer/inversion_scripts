@@ -15,15 +15,23 @@
 
 ## Usage
 
+After cloning the repo and installing the dependencies, all the below steps can be conducted and function as a tutorial.
+'test_data' contains a sample VCF file (test_data/input/sample_vcf.gz) and a corresponding metadata file (test_data/input/metadata.tsv). Following the instructions below guides the user through all necessary steps from preparing a genotype matrix to running the windowed_pca.py script.
+
 ### Preparing a genotype matrix from a VCF file (biallelic SNPs)
 ```
-# keep only biallelic SNP sites without missing data, with PASS filter set
-keep_samples="ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9"
+# define a list of samples to be included in the genotype matrix (sample ids must be a subset of ids in the input VCF)
+sample_ids="ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9"
+
+# set $sample_vcf and $genotype_matrix variables
 sample_vcf=test_dataset/input/sample.vcf.gz
-genotype_matrix=test_dataset/input/genotype_matrix.tsv
-bcftools view -h $sample_vcf | awk '$1=="#CHROM"' | cut -f 1,2,4,5,10- | tr -d '#' > $genotype_matrix
-bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 's|0/1|1|g' | sed 's|1/0|1|g' >> $genotype_matrix
-gzip ${genotype_matrix}
+genotype_matrix=test_dataset/input/genotype_matrix.tsv.gz
+
+# generate the header for $genotype_matrix from $sample_vcf
+bcftools view -h $sample_vcf | awk '$1=="#CHROM"' | cut -f 1,2,4,5,10- | tr -d '#' | gzip -c > $genotype_matrix
+
+# convert VCF rows to $genotype_matrix format (keep only lines without missing genotype calls, keep only biallelic snps that passed all filters, drop unnecessary info)
+bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 's|0/1|1|g' | sed 's|1/0|1|g' | gzip -c >> $genotype_matrix
 ```
 
 ```
@@ -92,7 +100,7 @@ python sw_pca.py <genotype matrix> <metadata> <chromosome name> <chromosome leng
 
 #### Example prompt 
 ```
-python3 windowed_pca.py ${genotype_matrix}.gz test_dataset/input/metadata.tsv test_dataset/output/ chr1 35000000 5000000 10000 primary_id $keep_samples primary_id 9 3
+python3 windowed_pca.py $genotype_matrix test_dataset/input/metadata.tsv test_dataset/output/ chr1 35000000 5000000 10000 primary_id $sample_ids primary_id 9 3
 ```
 
 
