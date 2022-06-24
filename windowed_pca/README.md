@@ -28,7 +28,7 @@ sample_vcf=test_dataset/input/sample.vcf.gz
 genotype_matrix=test_dataset/input/genotype_matrix.tsv.gz
 
 # define a list of samples to be included in the genotype matrix (samples must be subset of input VCF samples)
-sample_ids="ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9"
+sample_ids='ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9'
 
 # derive header for $genotype_matrix from $sample_vcf
 bcftools view -h $sample_vcf | awk '$1=="#CHROM"' | cut -f 1,2,4,5,10- | tr -d '#' | gzip -c > $genotype_matrix
@@ -39,7 +39,7 @@ bcftools view -h $sample_vcf | awk '$1=="#CHROM"' | cut -f 1,2,4,5,10- | tr -d '
 # - drop unnecessary VCF info (FORMAT, INFO columns)
 bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 's|0/1|1|g' | sed 's|1/0|1|g' | gzip -c >> $genotype_matrix
 ```
-Have a look at the first columns of the matrix
+Have a look at the first columns of the matrix:
 ```
 zcat ${genotype_matrix}.gz | head -n 15
 CHROM   POS     REF     ALT     ind_1   ind_2   ind_3   ind_4   ind_5   ind_6   ind_7   ind_8   ind_9
@@ -82,7 +82,7 @@ ind_9   18X     species_2       uninverted
 The python script requires 13 positional arguments, which are explained in more detail below:
 
 ```
-python sw_pca.py <genotype matrix> <metadata> <chromosome name> <chromosome length> <window size> <window step size> <filter column name> <filter column value> <color column name> <variance threshold> <mean threshold> <output prefix>
+python sw_pca.py <genotype matrix> <metadata> <output prefix> <chromosome name> <chromosome length> <window size> <window step size> <filter column name> <filter column value> <color column name> <variance threshold> <mean threshold>
 ```
 
 | Argument | Type | Description |
@@ -91,7 +91,7 @@ python sw_pca.py <genotype matrix> <metadata> <chromosome name> <chromosome leng
 | **metadata**          | str | path to the metadata file |
 | **output prefix**     | str | prefix that will be used for all output files ('test/' would create a new directory as the prefix and all output files would be located therein) |
 | **chromosome name**   | str | name of the chromosome, e.g. 'chr1' |
-| **chromosome length** | int | length of the chromosome in bp, e.g. '10000000' |
+| **chromosome length** | int | length of the chromosome in bp, e.g. '35000000' |
 | **window size**       | int | size of the sliding window in bp, e.g. '1000000' |
 | **window step** | int | step size of the sliding window in bp, e.g. '100000' |
 | **filter column name** | str | set a metadata column name to be used to select individuals to be included in the analysis e.g. 'genus' (see filter column value) |
@@ -101,13 +101,15 @@ python sw_pca.py <genotype matrix> <metadata> <chromosome name> <chromosome leng
 | **mean threshold** | int | relevant to correct random switching along PC axes, see code for details, if unsure, use "3" |
 
 
-#### Example prompt 
+#### Sample prompt 
 ```
-python3 windowed_pca.py $genotype_matrix test_dataset/input/metadata.tsv test_dataset/output/ chr1 35000000 5000000 10000 primary_id $sample_ids primary_id 9 3
+python3 windowed_pca.py $genotype_matrix test_dataset/input/metadata.tsv test_dataset/output/ chr1 35000000 1000000 10000 primary_id $sample_ids primary_id 9 3
 ```
+
+#### Output files
+[...]
 
 
 #### Notes:
-- genotype matrix: REF/ALT fields are not used, they can be filled with dummy data
+- genotype matrix: REF/ALT fields are not used, they can be populated with dummy data
 - all columns in metadata will be included in hover display in HTML plots
-- add description of output files
