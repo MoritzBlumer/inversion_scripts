@@ -19,6 +19,9 @@ The below instructions function as a tutorial (after cloning the repo and instal
 'test_data' contains a sample VCF file ('test_data/input/sample_vcf.gz') and a corresponding metadata file ('test_data/input/metadata.tsv'). The instructions below guide the user through all necessary steps from preparing a genotype matrix to running the windowed_pca.py script.
 
 ### Preparing a genotype matrix from a VCF file (biallelic SNPs)
+Based on the provided minimal information sample VCF, generate a genotype matrix in the required format.
+Below is one possible way to obtain a genotype matrix based on a VCF, but any other approach that results in the same format works.
+Columns REF and ALT are not used by windowed_pca.py and can be replaced with dummy data.
 ```
 # set $sample_vcf and $genotype_matrix variables
 sample_vcf=test_dataset/input/sample.vcf.gz
@@ -58,11 +61,11 @@ chr1    57865   A       C       0       0       0       0       0       0       
 
 
 ### Preparing a metadata file
+A metadata file is required to provide annotation for the HTML plots, and can also be used to control which samples to include in the windowed PCA analysis, and to assign groups that will have the same color in the plots.
+The minimum requirement for the metadata file is that the first column contains unique identifiers for each sample, and is called 'primary_id'. All additional fields are optional.
+An example metadata file is provided:
 ```
 cat test_dataset/input/metadata.tsv
-```
-
-```
 primary_id      coverage        species inversion_state
 ind_1   20X     species_1       inverted
 ind_2   21X     species_1       inverted
