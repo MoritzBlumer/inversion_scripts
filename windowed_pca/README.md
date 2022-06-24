@@ -115,15 +115,26 @@ python3 windowed_pca.py $genotype_matrix test_dataset/input/metadata.tsv test_da
 - <variance threshold> and <mean threshold> are set to the default values, for details see source code.
 
 
-#### Output files
-[...]
+### Output files
+Six output files are created by default, which can be grouped as follows:
+1. Windowed PCA:
+- ${output_prefix}.${chromosome_name}.pc_1.tsv contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
+- ${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.html: interactive HTML plot of the windowed PCA results, based on ${output_prefix}.${chromosome_name}.pc_1.tsv. if more than one color_column_name was specified, additional versions of this plot will be produced.
+- ${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.pdf: like the HTML file(s), just PDF(s)
+2. Supplementary info:
+- ${output_prefix}.${chromosome_name}.supplementary_info.tsv: contains additional info on the PCA results per window: '% explained PC 1', '% explained PC 2', '% included sites'; all values are relative, '% included sites' is the percentage of included sites relative to the specified window size.
+- ${output_prefix}.${chromosome_name}.supplementary_info.html: interactive HTML plot of this additional info
+- ${output_prefix}.${chromosome_name}.supplementary_info.pdf: same as interactive HTML, just PDF
 
 
-#### Notes:
+
+
+### Notes:
 - genotype matrix: REF/ALT fields are not used, they can be populated with dummy data
 - Any biallelic variants can be used as lng as the are encoded as 0 (hom ref), 1 (het), 2 (hom alt). I have used InDels smaller 20 bp before and got nice results
 - All columns in metadata will be included in hover display in HTML plots
 - If output files (TSVs) from a previous run are detected (same output prefix), they will be reused for plitting instead of calculating new ones. This is useful to adjust the color scheme of the plots. To rerun everything from scratch, delete any existing output files.
 - The threshold for the minimum number of SNPs per window is 100 and can be adjusted in the script. The lower the threshold, the noisier the plots.
 - By default, plots are only produced for PC1, but it is easy to enable the creation of PC2 plots as well (takes 1 minute, see script for instructions)
+- A major challenge for windowed PCAs is that the PCA in each window is conducted independently, and its rotation per principal component is thus random. This results in random switching along the component axis in the raw data, and very noisy plots. This script implements a correction step that aims at polarizing the orientation based on variance and mean of the previous window, using a specified number of the individuals with the most extreme values across the entire dataset (parameters <variance threshold> and <mean threshold>). This gives acceptable results for many tested datasets, but is not always ideal. It s sometimes worth testing different parameter combinations for <variance threshold> and <mean threshold>. If you have a better idea for the correction step, please let me know.
 - please contact me if you have any questions or run into problems

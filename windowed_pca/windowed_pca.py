@@ -413,8 +413,8 @@ def save_results(metadata_df, additional_info_df, pc_1_df, pc_2_plot=None):
     # supplementary df
 
     supplementary_plot = plot_additional_info(additional_info_df, chrom, chrom_len, window_size, window_step)
-    supplementary_plot.write_html(str(output_prefix + chrom + '.supplemenary_info.html').lower())
-    supplementary_plot.write_image(str(output_prefix + chrom + '.supplemenary_info.pdf').lower(), engine='kaleido', scale=2.4)
+    supplementary_plot.write_html(str(output_prefix + chrom + '.supplementary_info.html').lower())
+    supplementary_plot.write_image(str(output_prefix + chrom + '.supplementary_info.pdf').lower(), engine='kaleido', scale=2.4)
     additional_info_df = additional_info_df.fillna(value='NA')
     additional_info_df.to_csv(str(output_prefix + chrom + '.supplementary_info.tsv').lower(), sep='\t', index=False)
 
