@@ -16,12 +16,12 @@
 ## Usage
 
 The below instructions function as a tutorial (after cloning the repo and installing the dependencies).
-'test_data' contains a sample VCF file ('test_data/input/sample_vcf.gz') and a corresponding metadata file ('test_data/input/metadata.tsv'). The instructions below guide the user through all necessary steps from preparing a genotype matrix to running the windowed_pca.py script.
+```test_data``` contains a sample VCF file (```test_data/input/sample_vcf.gz```) and a corresponding metadata file (```test_data/input/metadata.tsv```). The instructions below guide the user through all necessary steps from preparing a genotype matrix to running the ```windowed_pca.py``` script.
 
 ### Preparing a genotype matrix from a VCF file (biallelic SNPs)
 Based on the provided minimal information sample VCF, generate a genotype matrix in the required format.
 Below is one possible way to obtain a genotype matrix based on a VCF, but any other approach that results in the same format works.
-Columns REF and ALT are not used by windowed_pca.py and can be replaced with dummy data.
+Columns REF and ALT are not used by ```windowed_pca.py``` and can be replaced with dummy data.
 ```
 # set $sample_vcf and $genotype_matrix variables
 sample_vcf=test_dataset/input/sample.vcf.gz
