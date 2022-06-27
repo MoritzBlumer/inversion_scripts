@@ -118,13 +118,13 @@ python3 windowed_pca.py $genotype_matrix test_dataset/input/metadata.tsv test_da
 ### Output files
 Six output files are created by default, which can be grouped as follows:
 1. Windowed PCA:
-- ```${output_prefix}.${chromosome_name}.pc_1.tsv``` contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
-- ```${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.html```: interactive HTML plot of the windowed PCA results, based on ```${output_prefix}.${chromosome_name}.pc_1.tsv```. if more than one color_column_name was specified, additional versions of this plot will be produced.
-- ```${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.pdf```: like the HTML file(s), just PDF(s)
+1.1 ```${output_prefix}.${chromosome_name}.pc_1.tsv``` contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
+1.2 ```${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.html```: interactive HTML plot of the windowed PCA results, based on ```${output_prefix}.${chromosome_name}.pc_1.tsv```. if more than one color_column_name was specified, additional versions of this plot will be produced.
+1.3 ```${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.pdf```: like the HTML file(s), just PDF(s)
 2. Supplementary info:
-- ```${output_prefix}.${chromosome_name}.supplementary_info.tsv```: contains additional info on the PCA results per window: '% explained PC 1', '% explained PC 2', '% included sites'; all values are relative, '% included sites' is the percentage of included sites relative to the specified window size.
-- ```${output_prefix}.${chromosome_name}.supplementary_info.html```: interactive HTML plot of this additional info
-- ```${output_prefix}.${chromosome_name}.supplementary_info.pdf```: same as interactive HTML, just PDF
+2.1 ```${output_prefix}.${chromosome_name}.supplementary_info.tsv```: contains additional info on the PCA results per window: '% explained PC 1', '% explained PC 2', '% included sites'; all values are relative, '% included sites' is the percentage of included sites relative to the specified window size.
+2.2 ```${output_prefix}.${chromosome_name}.supplementary_info.html```: interactive HTML plot of this additional info
+2.3 ```${output_prefix}.${chromosome_name}.supplementary_info.pdf```: same as interactive HTML, just PDF
 
 
 
