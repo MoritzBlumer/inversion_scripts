@@ -110,7 +110,7 @@ python3 windowed_pca.py $genotype_matrix test_dataset/input/metadata.tsv test_da
 - 'chr1' and '35000000' are set for <chromosome name> and <chromosome length>
 - <window size> is set to 1 Mbp ('1000000'), because the sample dataset is downsampled to 10% of the original SNPs, and a relatively large window size is required to have enough (>100) variants per window
 - <step size> is set to 100,000 bp ('100000'), resulting in overlapping windows.
-- <filter column name> is set to 'primary_id' and <filter column value> to the previously defined $sample_ids variable to provide a list of samples to include (since $sample_ids contains all samples in the metadata, all samples are included; to include e.g. only samples from species_1, set <filter column value> to 'species' and <filter column name> to 'species_1')
+- <filter column name> is set to 'primary_id' and <filter column value> to the previously defined $sample_ids variable to provide a list of samples to include (since \$sample_ids contains all samples in the metadata, all samples are included; to include e.g. only samples from species_1, set <filter column value> to 'species' and <filter column name> to 'species_1')
 - <color column name> is set to 'inversion_state', resulting in all individuals with the same inversion states having the same color in the output sliding window plot
 - <variance threshold> and <mean threshold> are set to the default values, for details see source code.
 
@@ -118,13 +118,13 @@ python3 windowed_pca.py $genotype_matrix test_dataset/input/metadata.tsv test_da
 ### Output files
 Six output files are created by default, which can be grouped as follows:
 1. Windowed PCA:
-- ${output_prefix}.${chromosome_name}.pc_1.tsv contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
-- ${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.html: interactive HTML plot of the windowed PCA results, based on ${output_prefix}.${chromosome_name}.pc_1.tsv. if more than one color_column_name was specified, additional versions of this plot will be produced.
-- ${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.pdf: like the HTML file(s), just PDF(s)
+- \${output_prefix}.\${chromosome_name}.pc_1.tsv contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
+- \${output_prefix}.\${chromosome_name}.pc_1.\${color_column_name}.html: interactive HTML plot of the windowed PCA results, based on ${output_prefix}.\${chromosome_name}.pc_1.tsv. if more than one color_column_name was specified, additional versions of this plot will be produced.
+- \${output_prefix}.\${chromosome_name}.pc_1.\${color_column_name}.pdf: like the HTML file(s), just PDF(s)
 2. Supplementary info:
-- ${output_prefix}.${chromosome_name}.supplementary_info.tsv: contains additional info on the PCA results per window: '% explained PC 1', '% explained PC 2', '% included sites'; all values are relative, '% included sites' is the percentage of included sites relative to the specified window size.
-- ${output_prefix}.${chromosome_name}.supplementary_info.html: interactive HTML plot of this additional info
-- ${output_prefix}.${chromosome_name}.supplementary_info.pdf: same as interactive HTML, just PDF
+- \${output_prefix}.\${chromosome_name}.supplementary_info.tsv: contains additional info on the PCA results per window: '% explained PC 1', '% explained PC 2', '% included sites'; all values are relative, '% included sites' is the percentage of included sites relative to the specified window size.
+- \${output_prefix}.\${chromosome_name}.supplementary_info.html: interactive HTML plot of this additional info
+- \${output_prefix}.\${chromosome_name}.supplementary_info.pdf: same as interactive HTML, just PDF
 
 
 
