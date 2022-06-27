@@ -118,7 +118,7 @@ def prepare_data(gt_matrix_path, metadata_path, taxon=None, group=None):
 
     # read in genotype matrix file line by line, skip header line (if idx > 0) and keep only infomative rows
 
-    print('\n[INFO] Reading genotype matrix \n', file=sys.stderr)
+    print('\n[INFO] Reading genotype matrix \n', file=sys.stderr, flush=True)
 
     rows = []
     informative_idx_lst = []
@@ -139,7 +139,7 @@ def prepare_data(gt_matrix_path, metadata_path, taxon=None, group=None):
                     rows.append(gts)
 
                 if idx % 100000 == 0:
-                    print('[INFO] Read ' + str(idx) + ' lines', file=sys.stderr)
+                    print('[INFO] Read ' + str(idx) + ' lines', file=sys.stderr, flush=True)
 
 
     # remove uninformative sites from pos_lst (otherwise PCA will fail)
@@ -153,7 +153,7 @@ def prepare_data(gt_matrix_path, metadata_path, taxon=None, group=None):
 
     # convert to array
 
-    print('\n[INFO] Converting to numpy array (this can take minutes)\n', file=sys.stderr)
+    print('\n[INFO] Converting to numpy array (this can take minutes)\n', file=sys.stderr, flush=True)
 
     gt_arr = np.array(rows, dtype=np.int8) # change to np.int8
 
@@ -198,7 +198,7 @@ def window_pca(gt_arr, pos_arr, window_start, window_stop, min_var_per_window=mi
 
         empty_array = [None] * window_gt_arr.shape[1]
         
-        print('[INFO] Skipped window ' + str(window_start) + '-' + str(window_stop) + ' with ' + str(window_gt_arr.shape[0]) + ' variants (threshold is ' + str(min_var_per_window) + ' variants per window)', file=sys.stderr)
+        print('[INFO] Skipped window ' + str(window_start) + '-' + str(window_stop) + ' with ' + str(window_gt_arr.shape[0]) + ' variants (threshold is ' + str(min_var_per_window) + ' variants per window)', file=sys.stderr, flush=True)
         
         return empty_array, empty_array, None, None, window_gt_arr.shape[0]
     
@@ -222,17 +222,17 @@ def do_pca(gt_arr, pos_arr, window_start_arr, windows_mid_arr, windows_stop_arr,
 
     # iterrate and conduct PCAs
     num = 1
-    print('[INFO] Processed 0 of ' + str(len(window_start_arr)) + ' windows', file=sys.stderr)
+    print('[INFO] Processed 0 of ' + str(len(window_start_arr)) + ' windows', file=sys.stderr, flush=True)
     for window_start, window_mid, window_stop in zip(window_start_arr, windows_mid_arr, windows_stop_arr):
         pc_1_df[window_mid], pc_2_df[window_mid], pc_1_pct_explained, pc_2_pct_explained, n_variants = window_pca(gt_arr, pos_arr, window_start, window_stop)
         pc_1_pct_explained_lst.append(pc_1_pct_explained)
         pc_2_pct_explained_lst.append(pc_2_pct_explained)
         n_variants_lst.append(n_variants)
         if num % 500 ==0:
-            print('[INFO] Processed ' + str(num) + ' of ' + str(len(window_start_arr)) + ' windows', file=sys.stderr)
+            print('[INFO] Processed ' + str(num) + ' of ' + str(len(window_start_arr)) + ' windows', file=sys.stderr, flush=True)
         num += 1
 
-    print('[INFO] Processed all windows', file=sys.stderr)
+    print('[INFO] Processed all windows', file=sys.stderr, flush=True)
 
     pc_1_pct_explained_arr = np.array(pc_1_pct_explained_lst, dtype=float)
     pc_2_pct_explained_arr = np.array(pc_2_pct_explained_lst, dtype=float)
@@ -471,7 +471,7 @@ def main():
 
     else:
         
-        print('\n[INFO] Reading in existing data\n', file=sys.stderr)
+        print('\n[INFO] Reading in existing data\n', file=sys.stderr, flush=True)
 
         pc_1_df = pd.read_csv(output_prefix + chrom + '.pc_1.tsv',  sep='\t', index_col=None)
         pc_1_df.fillna('NA', inplace=True)
