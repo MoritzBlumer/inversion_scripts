@@ -122,9 +122,9 @@ Six output files are created by default, which can be grouped as follows:
 - ```${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.html```: interactive HTML plot of the windowed PCA results, based on ```${output_prefix}.${chromosome_name}.pc_1.tsv```. if more than one color_column_name was specified, additional versions of this plot will be produced.
 - ```${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.pdf```: like the HTML file(s), just PDF(s)
 2. Supplementary info:
-- \${output_prefix}.\${chromosome_name}.supplementary_info.tsv: contains additional info on the PCA results per window: '% explained PC 1', '% explained PC 2', '% included sites'; all values are relative, '% included sites' is the percentage of included sites relative to the specified window size.
-- \${output_prefix}.\${chromosome_name}.supplementary_info.html: interactive HTML plot of this additional info
-- \${output_prefix}.\${chromosome_name}.supplementary_info.pdf: same as interactive HTML, just PDF
+- ```${output_prefix}.${chromosome_name}.supplementary_info.tsv```: contains additional info on the PCA results per window: '% explained PC 1', '% explained PC 2', '% included sites'; all values are relative, '% included sites' is the percentage of included sites relative to the specified window size.
+- ```${output_prefix}.${chromosome_name}.supplementary_info.html```: interactive HTML plot of this additional info
+- ```${output_prefix}.${chromosome_name}.supplementary_info.pdf```: same as interactive HTML, just PDF
 
 
 
