@@ -16,7 +16,7 @@
 ## Usage
 
 The below instructions function as a tutorial (after cloning the repo and installing the dependencies).
-```test_data``` contains a sample VCF file (```test_data/input/sample_vcf.gz```) and a corresponding metadata file (```test_data/input/metadata.tsv```). The instructions below guide the user through all necessary steps from preparing a genotype matrix to running the ```windowed_pca.py``` script.
+```test_data/``` contains a sample VCF file (```test_data/input/sample_vcf.gz```) and a corresponding metadata file (```test_data/input/metadata.tsv```). The instructions below guide the user through all necessary steps from preparing a genotype matrix to running the ```windowed_pca.py``` script.
 
 ### Preparing a genotype matrix from a VCF file (biallelic SNPs)
 Based on the provided minimal information sample VCF, generate a genotype matrix in the required format.
@@ -105,8 +105,8 @@ python3 sw_pca.py <genotype matrix> <metadata> <output prefix> <chromosome name>
 ```
 python3 windowed_pca.py $genotype_matrix test_dataset/input/metadata.tsv test_dataset/output/ chr1 35000000 1000000 10000 primary_id $sample_ids inversion_state 9 3
 ```
-- the described genotype matrix (test_dataset/input/genotype_matrix.tsv.gz) and metadata file (test_dataset/input/metadata.tsv) are used as input files <genotype matrix> and <metadata>
-- 'test_dataset/output/' is set as the <output prefix>, which tells the script to create a new output directory 'test_dataset/output/' (if it doesn't exist), and to create all output files therein
+- the described genotype matrix (```test_dataset/input/genotype_matrix.tsv.gz```) and metadata file (```test_dataset/input/metadata.tsv```) are used as input files <genotype matrix> and <metadata>
+- ```test_dataset/output/``` is set as the <output prefix>, which tells the script to create a new output directory ```test_dataset/output/``` (if it doesn't exist), and to create all output files therein
 - 'chr1' and '35000000' are set for <chromosome name> and <chromosome length>
 - <window size> is set to 1 Mbp ('1000000'), because the sample dataset is downsampled to 10% of the original SNPs, and a relatively large window size is required to have enough (>100) variants per window
 - <step size> is set to 100,000 bp ('100000'), resulting in overlapping windows.
