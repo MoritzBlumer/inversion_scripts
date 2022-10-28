@@ -82,7 +82,7 @@ ind_9   18X     species_2       uninverted
 The python script requires 13 positional arguments, which are explained in more detail below:
 
 ```
-python3 sw_pca.py <genotype matrix> <metadata> <output prefix> <chromosome name> <chromosome length> <window size> <window step size> <filter column name> <filter column value> <color column name> <variance threshold> <mean threshold>
+python3 windowed_pca.py <genotype matrix> <metadata> <output prefix> <chromosome name> <chromosome length> <window size> <window step size> <filter column name> <filter column value> <color column name> <variance threshold> <mean threshold>
 ```
 
 | Argument | Type | Description |
