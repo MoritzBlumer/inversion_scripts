@@ -60,6 +60,10 @@ def parse_arguments():
         print('\t\t<mean threshold>\tint\trelevant to correct random switching along PC axes, see code for details, if unsure, use "3"\n', file=sys.stderr)
         sys.exit()
 
+    # allow to slecify no input sample filter
+    if taxon == 'None': taxon = None
+    if group == 'None': group = None
+
     # convert str to int where necessary
 
     chrom_len, window_size, window_step, var_threshold, mean_threshold = int(chrom_len), int(window_size), int(window_step), int(var_threshold), int(mean_threshold)
