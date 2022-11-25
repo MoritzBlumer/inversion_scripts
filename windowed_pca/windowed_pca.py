@@ -6,7 +6,7 @@
 
 
 
-# To add PC2 output, but it uncomment lines tagged with '# uncomment for PC 2'
+# To add PC2 output, uncomment lines tagged with '# uncomment for PC 2'
 
 
 # The minimum number of variants per window is set to 50 and can be changed below (otherwise NA will be returned)
@@ -64,10 +64,14 @@ def parse_arguments():
     if taxon == 'None': taxon = None
     if group == 'None': group = None
 
-    # convert str to int where necessary
+    # convert str to int where necessary (if var_threshold == False, assumes list of specific guide samples as mean_threshold)
 
-    chrom_len, window_size, window_step, var_threshold, mean_threshold = int(chrom_len), int(window_size), int(window_step), int(var_threshold), int(mean_threshold)
+    if not var_threshold == 'False':
+        chrom_len, window_size, window_step, var_threshold, mean_threshold = int(chrom_len), int(window_size), int(window_step), int(var_threshold), int(mean_threshold)
 
+    else:
+        chrom_len, window_size, window_step = int(chrom_len), int(window_size), int(window_step)
+    
     output_prefix = output_prefix.lower()
 
 
@@ -252,18 +256,28 @@ def calibrate_annotate(pc_df, metadata_df, pc, var_threshold=9, mean_threshold=3
 
     '''
     - take a pc_df and adjust window orientation using a selection of a few samples with high absolute values and small variability
-    - then annotate the df with metadata
+    - then annotate the df with metadata.
+    - hack: if setting var_threshold=False and mean_threshold to a set of primary_ids (e.g. "cichlid7050764,cichlid7050776,cichlid7050768"), those will be used as guide samples for polarizaion
+
     '''
 
     # select the 9 samples with the least variance, and from those the 3 with the highest absolute value accross 
     # all windows as guide samples to calibrate the orientation of all windows
 
-    guide_samples = list(pc_df.dropna(axis=1).abs().var(axis=1).sort_values(ascending=True).index[0:var_threshold])
-    
-    guide_samples_df = pc_df.loc[guide_samples]
-    
-    guide_samples = list(guide_samples_df.dropna(axis=1).abs().sum(axis=1).sort_values(ascending=False).index[0:mean_threshold])
-    
+    if not var_threshold == 'False':
+
+        guide_samples = list(pc_df.dropna(axis=1).abs().var(axis=1).sort_values(ascending=True).index[0:var_threshold])
+
+        guide_samples_df = pc_df.loc[guide_samples]
+        
+        guide_samples = list(guide_samples_df.dropna(axis=1).abs().sum(axis=1).sort_values(ascending=False).index[0:mean_threshold])
+
+    else:
+
+        guide_samples = mean_threshold.split(',')
+
+        guide_samples_df = pc_df.loc[guide_samples]
+
     guide_samples_df = guide_samples_df.loc[guide_samples]
 
     
@@ -345,14 +359,14 @@ def calibrate_annotate(pc_df, metadata_df, pc, var_threshold=9, mean_threshold=3
 
 
 
-def plot_pc(pc_df, pc, metadata_df, color_taxon, chrom, chrom_len, window_size, window_step):
+def plot_pc(pc_df, pc, color_taxon, chrom, chrom_len, window_size, window_step):
     
     '''
     Plot one PC for all included sampled along the chromosome
     '''
 
     fig = px.line(pc_df, x='window_mid', y=pc, line_group='primary_id', color=color_taxon, hover_name='primary_id', 
-                    hover_data=list(metadata_df.columns), 
+                    hover_data=[x for x in list(pc_df.columns) if x not in ['window_mid', pc]],
                     width=chrom_len/20000, height=500,
                     title=str('<b>Windowed PCA of ' + chrom + '</b><br> (chromosome length: ' + str(chrom_len) + ' bp, window size: ' + str(window_size) + ' bp, window step: ' + str(window_step) + ' bp)'), 
                     labels = dict(pc_1 = '<b>PC 1<b>', pc_2 = '<b>PC 2<b>', window_mid = '<b>Genomic position<b>'))
@@ -395,7 +409,7 @@ def plot_additional_info(additional_info_df, chrom, chrom_len, window_size, wind
 
 
 
-def save_results(metadata_df, additional_info_df, pc_1_df, pc_2_plot=None):
+def save_results(additional_info_df, pc_1_df, pc_2_plot=None):
     '''
     plotting and saving results (HTMLs, PDFs, TSVs)
     '''
@@ -403,15 +417,15 @@ def save_results(metadata_df, additional_info_df, pc_1_df, pc_2_plot=None):
 
     for c_taxon in color_taxon.split(','):
 
-        pc_1_plot = plot_pc(pc_1_df, 'pc_1', metadata_df, c_taxon, chrom, chrom_len, window_size, window_step)
+        pc_1_df.to_csv(str(output_prefix + chrom + '.pc_1.tsv').lower(), sep='\t', index=False)
+        pc_1_plot = plot_pc(pc_1_df, 'pc_1', c_taxon, chrom, chrom_len, window_size, window_step)
         pc_1_plot.write_html(str(output_prefix + chrom + '.pc_1.' + str(c_taxon) + '.html').lower())
         pc_1_plot.write_image(str(output_prefix + chrom + '.pc_1.' + str(c_taxon) + '.pdf').lower(), engine='kaleido', scale=2.4)
-        pc_1_df.to_csv(str(output_prefix + chrom + '.pc_1.tsv').lower(), sep='\t', index=False)
 
-        # pc_2_plot = plot_pc(pc_2_df, 'pc_2', metadata_df, c_taxon, chrom, chrom_len, window_size, window_step)                     # uncomment for PC 2
-        # pc_2_plot.write_html(str(output_prefix + chrom + '.pc_2.' + str(c_taxon) + '.html').lower())                               # uncomment for PC 2
-        # pc_2_plot.write_image(str(output_prefix + chrom + '.pc_2.' + str(c_taxon) + '.pdf).lower()', engine='kaleido', scale=2.4)  # uncomment for PC 2
-        # pc_2_df.to_csv(str(output_prefix + chrom + '.pc_2.tsv').lower(), sep='\t', index=False)                                    # uncomment for PC 2
+        # pc_2_df.to_csv(str(output_prefix + chrom + '.pc_2.tsv').lower(), sep='\t', index=False)                                   # uncomment for PC 2
+        # pc_2_plot = plot_pc(pc_2_df, 'pc_2', c_taxon, chrom, chrom_len, window_size, window_step)                                 # uncomment for PC 2
+        # pc_2_plot.write_html(str(output_prefix + chrom + '.pc_2.' + str(c_taxon) + '.html').lower())                              # uncomment for PC 2
+        # pc_2_plot.write_image(str(output_prefix + chrom + '.pc_2.' + str(c_taxon) + '.pdf).lower()', engine='kaleido', scale=2.4) # uncomment for PC 2
 
 
     # supplementary df
@@ -493,8 +507,8 @@ def main():
 
     # plot and save HTML and PDF plots and TSVs
 
-    save_results(metadata_df, additional_info_df, pc_1_df)
-    # save_results(metadata_df, additional_info_df, pc_1_df, pc_2_df) # uncomment for PC 2
+    save_results(additional_info_df, pc_1_df)
+    # save_results(additional_info_df, pc_1_df, pc_2_df) # uncomment for PC 2
 
 
     # print INFO
