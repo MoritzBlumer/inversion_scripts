@@ -130,7 +130,7 @@ Six output files are created by default, which can be grouped as follows:
 
 
 ### Notes:
-- WARNING: The entire genotype matrix is loaded into memory in the first step to speed up computation. This reauires sufficient memory, depending on the size of the used callset.
+- WARNING: The entire genotype matrix is loaded into memory in the first step to speed up computation. This requires sufficient memory, depending on the size of the used callset.
 - genotype matrix: REF/ALT fields are not used, they can be populated with dummy data
 - Any biallelic variants can be used as lng as the are encoded as 0 (hom ref), 1 (het), 2 (hom alt). I have used InDels smaller 20 bp before and got nice results
 - All columns in metadata will be included in hover display in HTML plots
