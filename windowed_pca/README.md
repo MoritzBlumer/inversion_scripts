@@ -2,7 +2,7 @@
 
 ![example_plot](windowed_pca.png)
 
-- useful to explore the divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
+- useful to explore the variation/divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
 - generates PDF and interactive HTML plots (using plotly)
 - input files: genotype matrix (easy to obtain from VCF) and a metadata file (details below)
 
