@@ -64,11 +64,11 @@ chr1    57865   A       C       0       0       0       0       0       0       
 
 ### Preparing a metadata file
 A metadata file is required to provide annotation for the HTML plots, and can also be used to control which samples to include in the windowed PCA analysis, and to assign groups that will have the same color in the plots.
-The minimum requirement for the metadata file is that the first column contains unique identifiers for each sample, and is called 'primary_id'. All additional fields are optional.
-An example metadata file, which in addition to the primary_id contains info on sequencing coverage, species and inversion state of each sample, is provided:
+The minimum requirement for the metadata file is that the first column contains unique identifiers for each sample, and is called 'id'. All additional fields are optional.
+An example metadata file, which in addition to the id contains info on sequencing coverage, species and inversion state of each sample, is provided:
 ```
 cat test_dataset/input/metadata.tsv
-primary_id      coverage        species inversion_state
+id      coverage        species inversion_state
 ind_1   20X     species_1       inverted
 ind_2   21X     species_1       inverted
 ind_3   20X     species_1       inverted
@@ -106,7 +106,7 @@ value> <color column name> <variance threshold> <mean threshold>
 
 #### Sample prompt 
 ```
-python3 windowed_pca.py $genotype_file test_dataset/input/metadata.tsv test_dataset/output/ chr1 35000000 1000000 10000 primary_id $sample_ids inversion_state 9 3
+python3 windowed_pca.py $genotype_file test_dataset/input/metadata.tsv test_dataset/output/ chr1 35000000 1000000 10000 id $sample_ids inversion_state 9 3
 ```
 - the described genotype file (```test_dataset/input/genotype_file.tsv.gz```) and metadata file (```test_dataset/input/metadata.tsv```) are used as input files <genotype 
 file> and <metadata>
@@ -114,7 +114,7 @@ file> and <metadata>
 - 'chr1' and '35000000' are set for <chromosome name> and <chromosome length>
 - <window size> is set to 1 Mbp ('1000000'), because the sample dataset is downsampled to 10% of the original SNPs, and a relatively large window size is required to have enough (>100) variants per window
 - <step size> is set to 100,000 bp ('100000'), resulting in overlapping windows.
-- <filter column name> is set to 'primary_id' and <filter column value> to the previously defined $sample_ids variable to provide a list of samples to include (since \$sample_ids contains all samples in the metadata, all samples are included; to include e.g. only samples from species_1, set <filter column value> to 'species' and <filter column name> to 'species_1')
+- <filter column name> is set to 'id' and <filter column value> to the previously defined $sample_ids variable to provide a list of samples to include (since \$sample_ids contains all samples in the metadata, all samples are included; to include e.g. only samples from species_1, set <filter column value> to 'species' and <filter column name> to 'species_1')
 - <color column name> is set to 'inversion_state', resulting in all individuals with the same inversion states having the same color in the output sliding window plot
 - <variance threshold> and <mean threshold> are set to the default values, for details see source code.
 
