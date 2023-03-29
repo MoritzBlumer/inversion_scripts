@@ -1,58 +1,77 @@
+## Dependencies
 import gzip
 import sys
 import pandas as pd
 import numpy as np
-import plotly.express as px
+import plotly, plotly.express as px
 
+
+## Windowed pca scripts
 
 def parse_arguments():
-
     '''
-    parse command line arguments and print help message if the number of arguments is different from what is expected
+    Parse command line arguments & print help message if # of arguments is incorrect
     '''
 
-    # declare all variables global
+    global variant_file_path, metadata_path, output_prefix, chrom, start, stop, w_size, w_step, \
+        pc, taxon, group, color_taxon, guide_samples
 
-    global variant_file_path, metadata_path, output_prefix, chrom, start, stop, w_size, w_step, pc, taxon, group, color_taxon, guide_samples
-
-    # fetch arguments
-    
-    _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, pc, taxon, group, color_taxon, guide_samples = sys.argv
-
+    # fetch arguments    
+    _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, pc, taxon, group, \
+        color_taxon, guide_samples = sys.argv
 
     # print help message if incorrect number of arguments was specified
-
     if len(sys.argv) != 13:
-        print('\nUsage:', file=sys.stderr)
-        print('\tpython windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size> <window step size> <filter column name> <filter column value> \ \n                         <color column name> <guide samples>\n', file=sys.stderr)
-        print('\t\t<variant file>\tstr\tpath to uncompressed or gzipped variant file (VCF or genotype file; specifications --> README)', file=sys.stderr)
-        print('\t\t<metadata>\t\tstr\tpath to the metadata file (specifications --> README)', file=sys.stderr)
-        print('\t\t<output prefix>\t\tstr\tprefix that will be used for all output files, can also be a directory to be created', file=sys.stderr)
-        print('\t\t<region>\tint\tchromosome and target coordinates in bp; use format "chr:start-stop" (i.e. chr1:1-chrom_length to analyze the entire chr1)', file=sys.stderr)
-        print('\t\t<window size>\t\tint\tsize of the sliding window in bp, e.g. "1000000"', file=sys.stderr)
-        print('\t\t<window step>\t\tint\tstep size of the sliding window in bp, e.g. "10000"', file=sys.stderr)
-        print('\t\t<pc\t\tint\tprincipal component to use (either "1" or "2")', file=sys.stderr)
-        print('\t\t<filter column name>\tstr\tset a metadata column name to be used to select individuals to be included in the analysis e.g. "genus" (see filter column value)', file=sys.stderr)
-        print('\t\t<filter column value>\t\tstr\tselect a value to be filtered for in the defined filter column. Setting <filter column name> to "genus" and <filter column value> to "Homo" would include all individuals of the genus Homo in the output, and ignore all others. A comma-separated list of include values can be provided, to include for example a specific subset of genera ("Homo,Pan") ', file=sys.stderr)
-        print('\t\t<color column name>\tstr\tselect a metadata column that will serve to partition included individuals into color groups in the output plots. If selecting e.g. "genus", all individuals from the same genus will have the same color in the output plots. If specifying a comma-separated list of column names (e.g. "genus,species"), two versions of each output plot will be produced, that differ only in the color scheme', file=sys.stderr)
-        print('\t\t<guide samples>\tstr\t[optional]list of samples to use for polarization, e.g. "ind1,ind2,ind3" (details --> README)', file=sys.stderr)
-        sys.exit()
+        print('   python windowed_pca.py <variant file> <metadata> <output prefix> <region>\n\
+                                <window size> <window step size> <filter column name>\n\
+                                <filter column value> <color column name>\n\
+                                <guide samples>\n\n\
+            <variant file>         str  path to uncompressed or gzipped variant file\n\
+                                        (VCF or genotype file; details -> README)\n\
+            <metadata>             str  path to the metadata file (details -> README)\n\
+            <output prefix>        str  prefix for output files\n\
+            <region>               int  target region in format "chr:start-stop"\n\
+                                        (i.e. chr1:1-chrom_length to analyze the\n\
+                                        entire chr1)\n\
+            <window size>          int  sliding window size in bp, e.g. "1000000"\n\
+            <window step>          int  sliding window step size in bp, e.g. "10000"\n\
+            <pc>                   int  principal component to use ("1" or "2")\n\
+            <filter column name>   str  metadata column name to filter for\n\
+                                        individuals to includede in the analysis,\n\
+                                        e.g. "genus" (see <filter column value>)\n\
+            <filter column value>  str  value to be filtered for in filter column;\n\
+                                        Setting <filter column name> to "genus" and\n\
+                                        <filter column value> to "Homo" would\n\
+                                        include all individuals of the genus Homo\n\
+                                        in the output, while ignoring all others.\n\
+                                        (a comma-separated list of include values\n\
+                                        can be provided, e.g. "Homo,Pan")\n\
+            <color column name>    str  metadata column to assign colors by in the\n\
+                                        output plot; if selecting "genus", all\n\
+                                        individuals from the same genus will have\n\
+                                        the same color in the output plots; if\n\
+                                        specifying a comma-separated list like \n\
+                                        "genus,species", one output plot is \n\
+                                        generated for each color scheme\n\
+            <guide samples>        str  [optional] list of samples to use for\n\
+                                        polarization, e.g. "ind1,ind2,ind3"\n\
+                                        (details --> README)', file=sys.stderr)
 
-    
+    # fetch chrom, start, stop from regions string
     chrom = region.split(':')[0]
     start = region.split(':')[1].split('-')[0]
     stop = region.split(':')[1].split('-')[1]
 
+    # change str to int where appropriate
     start, stop, w_size, w_step = int(start), int(stop), int(w_size), int(w_step)
     
+    # change output_prefix to lower case
     output_prefix = output_prefix.lower()
 
 
-## GET RID OF ORDER BY GT FILE, OR NOT? --> TEST IF CURRENT VERSION CAUSES PROBLEMS
 def read_metadata(variant_file_path, metadata_path, taxon=None, group=None):
     '''
     Read in metadata, optionally filter by taxon ?and sort by gt_file sample order?
-
     '''
 
     # fetch sample names from genotype file header
@@ -61,7 +80,10 @@ def read_metadata(variant_file_path, metadata_path, taxon=None, group=None):
         samples_lst = gt_file.readline().strip().split('\t')[2:]
 
     # read in metadata
-    metadata_df = pd.read_csv(metadata_path, sep='\t')
+    metadata_df = pd.read_csv(
+        metadata_path,
+        sep='\t',
+    )
 
     # re-name first column to 'id' (this is the only required column and must have unique ids)
     metadata_df.columns.values[0] = 'id'
@@ -87,7 +109,6 @@ def read_metadata(variant_file_path, metadata_path, taxon=None, group=None):
 
 
 def polarize(w_pca_df, var_threshold, mean_threshold, guide_samples): ## IMPROVE GUIDESAMPLE SETTINGS
-
     '''
     Polarize windowed PCA output: if no guide_samples specified polarize PC orientation using a subset of samples 
     with large absolute values and small variability
@@ -96,15 +117,15 @@ def polarize(w_pca_df, var_threshold, mean_threshold, guide_samples): ## IMPROVE
     # if $guide_samples not manually specified, select the $var_threshold samples with the least variance, and 
     # from those the $mean_threshold with the highest absolute value accross all windows as guide samples to 
     # calibrate the orientation of all windows
-    if guide_samples: # check if this makes sense from #######
+    if guide_samples: # check if this makes sense from #############################################
         guide_samples = mean_threshold.split(',')
         guide_samples_df = w_pca_df.loc[guide_samples]
     else:
         guide_samples = list(w_pca_df.dropna(axis=1).abs().var(axis=1).sort_values(ascending=True).index[0:var_threshold])
         guide_samples_df = w_pca_df.loc[guide_samples]
         guide_samples = list(guide_samples_df.dropna(axis=1).abs().sum(axis=1).sort_values(ascending=False).index[0:mean_threshold])
-
-    # to #######
+    # to ###########################################################################################
+    
     guide_samples_df = guide_samples_df.loc[guide_samples]
 
     # considering all guide samples, if the negative absolute value of each window is closer 
@@ -118,14 +139,13 @@ def polarize(w_pca_df, var_threshold, mean_threshold, guide_samples): ## IMPROVE
         out = [0]
     
         for window in row[1:]:
+
             if window == None:
                 out.append(0)
                 continue
-
             elif abs(window - prev_window) > abs(window - (prev_window*-1)):
                 out.append(1)
                 prev_window = (window*-1)
-    
             else:
                 out.append(-1)
                 prev_window = window
@@ -167,7 +187,6 @@ def annotate(w_pca_df, metadata_df, pc):
 
 
 def plot_w_pca(w_pca_df, pc, color_taxon, chrom, start, stop, w_size, w_step):
-    
     '''
     Plot one PC for all included sampled along the chromosome
     '''
@@ -191,27 +210,168 @@ def plot_w_pca(w_pca_df, pc, color_taxon, chrom, start, stop, w_size, w_step):
     return fig
 
 
-def plot_w_stats(w_stats_df, chrom, start, stop, w_size, w_step):
-    
+def plot_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w):
     '''
-    Plot supplementary information per window: % explained by PC1 and PC2 + % of sites that were included per window
+    Plot per windowstats: % explained by PC1 and PC2 + # of variants per window
     '''
+    global missing_stretches # delete
+    # for simplicity
+    go = plotly.graph_objects
     
-    fig = px.line(w_stats_df, x=w_stats_df.index, y=['pct_explained_pc_1', 'pct_explained_pc_2', 'pct_included_sites'], 
-                    width=(stop-start)/20000, height=500,
-                    title=str('<b>Per window-stats of ' + chrom + ':' + str(start) + '-' + str(stop) + '</b><br> (window size: ' + str(w_size) + ' bp, window step: ' + str(w_step) + ' bp)'),
-                    labels = dict(Genomic_Position = '<b>Genomic Position<b>', value = '<b>variable [%]<b>', window_mid = '<b>Genomic position<b>', pct_explained_pc_1 = '% variance explained PC 1'))
+    # initialize figure
+    fig = plotly.subplots.make_subplots(
+        specs=[[{'secondary_y': True}]],
+        x_title='<b>Genomic position<b>',
+        subplot_titles=[
+            '<b>Per window stats of ' + chrom + ':' + str(start) + '-' + str(stop) + 
+            '</b><br> (window size: ' + str(w_size) + ' bp, window step: ' + str(w_step) + ' bp)'
+        ],
+    )
+
+    # pc_1 variance explained
+    fig.add_trace(
+        go.Scatter(
+            x=w_stats_df.index,
+            y=w_stats_df['pct_explained_pc_1'],
+            name='PC 1',
+            mode='lines',
+            line=dict(color='#4d61b0', width=1),
+            fill='tozeroy',
+            connectgaps=True,
+        ),
+        secondary_y=False,
+    )
+
+    # pc_2 variance explained
+    fig.add_trace(
+        go.Scatter(
+            x=w_stats_df.index,
+            y=w_stats_df['pct_explained_pc_2'],
+            name='PC 2',
+            mode='lines',
+            line=dict(color='#458255', width=1),
+            fill='tozeroy',
+            connectgaps=True,
+        ),
+        secondary_y=False
+    )
+
+    # plotly has a bug: if filling the area under the curve, the 'fill' doesn't break at missing 
+    # data even when specifying connectgaps=True --> therefore, plot white rectangles on top to 
+    # cover the missing data stretches
+    missing_stretches, stretch = [], []
+    pc_1_max = max(w_stats_df['pct_explained_pc_1'])
+    for w_mid, n_variants in zip(w_stats_df.index, w_stats_df['n_variants']):
+        if n_variants >= min_var_per_w:
+            if stretch:
+                missing_stretches.append(stretch)
+                stretch = []
+        else: stretch.append(w_mid)
+    if stretch: missing_stretches.append(stretch)
+    for stretch in missing_stretches:
+        fig.add_trace(
+            go.Scatter(
+                x=[stretch[0], stretch[-1], stretch[-1], stretch[0]], 
+                y=[0, 0, pc_1_max, pc_1_max], 
+                fill='toself',
+                mode='none',
+                fillcolor='white',
+                hoverinfo='skip',
+                showlegend=False,
+            )
+        )
+        
+    # fill only regions between min_var_per_w and n_variants if n_variants < min_var_per_w this 
+    # requires some hacks, such as adding a dummy datapoint at ± 0.0001 around missing stretches to 
+    # delimit grey filled areas
+    w_stats_gaps_df = w_stats_df.loc[w_stats_df['n_variants'] < min_var_per_w][['n_variants']]
+    gap_edges = [x[0]-0.0001 for x in missing_stretches] + [x[-1]+0.0001 for x in missing_stretches]
+    gap_edges_df = pd.DataFrame([min_var_per_w] * len(gap_edges), gap_edges, columns=['n_variants'])
+    w_stats_gaps_df = pd.concat([w_stats_gaps_df, gap_edges_df]).sort_index()
+    fig.add_trace(
+        go.Scatter(
+            x=w_stats_gaps_df.index,
+            y=w_stats_gaps_df['n_variants'],
+            mode='lines',
+            line=dict(color='rgba(0, 0, 0, 0)'),
+            hoverinfo='skip',
+            showlegend=False,
+        ),
+        secondary_y=True,
+    )
+
+    # horizontal line to show min_var_per_w threshold
+    fig.add_trace(
+        go.Scatter(
+            x=[start, stop],
+            y=[min_var_per_w, min_var_per_w],
+            mode='lines',
+            line=dict(color='#595959', dash='dot', width=1),
+            fill='tonexty',
+            hoverinfo='skip',
+            showlegend=False
+        ),
+        secondary_y=True,
+    )
+
+    # add annotation for min_var_per_w line
+    fig.add_trace(go.Scatter(
+        x=[stop],
+        y=[min_var_per_w-0.05*min_var_per_w],
+        mode='lines+text',
+        text=['min # of variants threshold '],
+        textposition='bottom left',
+        textfont=dict(color=['#595959']),
+        showlegend=False,
+        ),
+        secondary_y=True,
+    )
+
+    # number of variants per window
+    fig.add_trace(
+        go.Scatter(
+            x=w_stats_df.index,
+            y=w_stats_df['n_variants'],
+            name='# variants',
+            mode='lines',
+            line=dict(color='#595959', dash='dot', width=1)
+        ),
+        secondary_y=True,
+    )
+
+    fig.add_hline(
+        y=min_var_per_w,
+        secondary_y=True,
+    )
+
+    # set x axis range
+    fig.update_xaxes(
+        range=[start, stop],
+    )
     
-    fig.update_layout(template='simple_white', font_family='Arial', font_color='black',
-                    xaxis=dict(ticks='outside', mirror=True, showline=True),
-                    yaxis=dict(ticks='outside', mirror=True, showline=True),
-                    legend={'traceorder':'normal'}, 
-                    title={'xanchor': 'center', 'y': 0.9, 'x': 0.45},
-                    hovermode='x unified')
-    
-    fig.update_xaxes(range=[start, stop])
-    
-    fig.update_traces(line=dict(width=1.0))
+    # set y axes ranges and titles
+    fig.update_yaxes(
+        rangemode='tozero',
+        title_text='<b>% variance explained<b>',
+        secondary_y=False
+    )
+    fig.update_yaxes(
+        rangemode='tozero',
+        title_text='<b># variants per window</b>',
+        secondary_y=True
+    )
+
+    # adjust layout
+    fig.update_layout(
+        template='simple_white',
+        font_family='Arial', font_color='black',
+        autosize=False,
+        width=(stop-start)/20000, height=500,
+        xaxis=dict(ticks='outside', mirror=True, showline=True),
+        yaxis=dict(ticks='outside', mirror=True, showline=True),
+        legend={'traceorder':'normal'},
+        title={'xanchor': 'center', 'y': 0.9, 'x': 0.45},
+        hovermode='x unified',
+    )
 
     return fig
-
