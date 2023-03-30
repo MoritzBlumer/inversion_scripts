@@ -1,73 +1,11 @@
 ## Dependencies
 import gzip
-import sys
 import pandas as pd
 import numpy as np
 import plotly, plotly.express as px
 
 
 ## Windowed pca scripts
-
-def parse_arguments():
-    '''
-    Parse command line arguments & print help message if # of arguments is incorrect
-    '''
-
-    global variant_file_path, metadata_path, output_prefix, chrom, start, stop, w_size, w_step, \
-        pc, taxon, group, color_taxon, guide_samples
-
-    # fetch arguments    
-    _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, pc, taxon, group, \
-        color_taxon, guide_samples = sys.argv
-
-    # print help message if incorrect number of arguments was specified
-    if len(sys.argv) != 13:
-        print('   python windowed_pca.py <variant file> <metadata> <output prefix> <region>\n\
-                                <window size> <window step size> <filter column name>\n\
-                                <filter column value> <color column name>\n\
-                                <guide samples>\n\n\
-            <variant file>         str  path to uncompressed or gzipped variant file\n\
-                                        (VCF or genotype file; details -> README)\n\
-            <metadata>             str  path to the metadata file (details -> README)\n\
-            <output prefix>        str  prefix for output files\n\
-            <region>               int  target region in format "chr:start-stop"\n\
-                                        (i.e. chr1:1-chrom_length to analyze the\n\
-                                        entire chr1)\n\
-            <window size>          int  sliding window size in bp, e.g. "1000000"\n\
-            <window step>          int  sliding window step size in bp, e.g. "10000"\n\
-            <pc>                   int  principal component to use ("1" or "2")\n\
-            <filter column name>   str  metadata column name to filter for\n\
-                                        individuals to includede in the analysis,\n\
-                                        e.g. "genus" (see <filter column value>)\n\
-            <filter column value>  str  value to be filtered for in filter column;\n\
-                                        Setting <filter column name> to "genus" and\n\
-                                        <filter column value> to "Homo" would\n\
-                                        include all individuals of the genus Homo\n\
-                                        in the output, while ignoring all others.\n\
-                                        (a comma-separated list of include values\n\
-                                        can be provided, e.g. "Homo,Pan")\n\
-            <color column name>    str  metadata column to assign colors by in the\n\
-                                        output plot; if selecting "genus", all\n\
-                                        individuals from the same genus will have\n\
-                                        the same color in the output plots; if\n\
-                                        specifying a comma-separated list like \n\
-                                        "genus,species", one output plot is \n\
-                                        generated for each color scheme\n\
-            <guide samples>        str  [optional] list of samples to use for\n\
-                                        polarization, e.g. "ind1,ind2,ind3"\n\
-                                        (details --> README)', file=sys.stderr)
-
-    # fetch chrom, start, stop from regions string
-    chrom = region.split(':')[0]
-    start = region.split(':')[1].split('-')[0]
-    stop = region.split(':')[1].split('-')[1]
-
-    # change str to int where appropriate
-    start, stop, w_size, w_step = int(start), int(stop), int(w_size), int(w_step)
-    
-    # change output_prefix to lower case
-    output_prefix = output_prefix.lower()
-
 
 def read_metadata(variant_file_path, metadata_path, taxon=None, group=None):
     '''
@@ -108,56 +46,77 @@ def read_metadata(variant_file_path, metadata_path, taxon=None, group=None):
     return metadata_df
 
 
-def polarize(w_pca_df, var_threshold, mean_threshold, guide_samples): ## IMPROVE GUIDESAMPLE SETTINGS
+def polarize(w_pca_df, mean_threshold, guide_samples):
     '''
-    Polarize windowed PCA output: if no guide_samples specified polarize PC orientation using a subset of samples 
-    with large absolute values and small variability
+    Polarize windowed PCA output: if no guide_samples specified polarize PC orientation using a 
+    subset of samples with large absolute values and small variability (var_threshold  and 
+    mean_threshold variables)
+    Furthermore, switch the entire plot if the largest absolute value is negative (to make plots
+    more comparable between chromosomes)
     '''
 
-    # if $guide_samples not manually specified, select the $var_threshold samples with the least variance, and 
-    # from those the $mean_threshold with the highest absolute value accross all windows as guide samples to 
-    # calibrate the orientation of all windows
-    if guide_samples: # check if this makes sense from #############################################
-        guide_samples = mean_threshold.split(',')
-        guide_samples_df = w_pca_df.loc[guide_samples]
+    # remove the 60% most variable samples from the dataset (keep 40% to not only keep the ones 
+    # around 0) --> keep 40%
+    var_threshold = round(len(w_pca_df)*0.4)
+
+    # if guide_samples not manually specified, select the var_threshold samples with the least 
+    # variance, and from those the mean_threshold samples with the highest absolute value accross 
+    # all windows as guide samples to calibrate the orientation of all windows
+    if guide_samples:
+        guide_samples = guide_samples.split(',')
     else:
-        guide_samples = list(w_pca_df.dropna(axis=1).abs().var(axis=1).sort_values(ascending=True).index[0:var_threshold])
-        guide_samples_df = w_pca_df.loc[guide_samples]
-        guide_samples = list(guide_samples_df.dropna(axis=1).abs().sum(axis=1).sort_values(ascending=False).index[0:mean_threshold])
-    # to ###########################################################################################
-    
-    guide_samples_df = guide_samples_df.loc[guide_samples]
+        guide_samples_df = w_pca_df.loc[w_pca_df.dropna(axis=1).abs().var(axis=1).sort_values()\
+                                        .index[0:var_threshold]]
+        guide_samples = guide_samples_df.dropna(axis=1).abs().sum(axis=1).sort_values()\
+                                        .index[-mean_threshold:]
 
-    # considering all guide samples, if the negative absolute value of each window is closer 
+    # subset w_pca_df to guide_samples
+    guide_samples_df = w_pca_df.loc[guide_samples]
+
+    # considering only guide samples, if the negative absolute value of a window is closer to the
+    # absolute value 
     # that in, switch orientation of that window
     # (1 --> switch, 0 --> keep)
     
-    rows_lst = []    
+    sample_switch_lst = []    
     for row in guide_samples_df.iterrows():
+
+        # need to treat first window special because it has no reference/previous window
+        switch = [0]
         row = list(row[1])
-        prev_window = row[0] if not row[0] == None else 0 # only if current window is None, prev_window can be None, in that case set it to 0 to enable below numerical comparisons
-        out = [0]
-    
+        prev_window = row[0] if not row[0] == None else 0 # only if the second window is None, the 
+                                                          # first window can be None, in that case 
+                                                          # set it to 0 for numerical comparisons
+        
+        # parse by row (=by sample), each window separately and compare to previous
         for window in row[1:]:
 
+            # current window has no value --> encode it as 0 (=no effect on balance)
             if window == None:
-                out.append(0)
+                switch.append(0)
                 continue
+            
+            # current window closer to switched previous window --> encode it as 1 (=switch)
             elif abs(window - prev_window) > abs(window - (prev_window*-1)):
-                out.append(1)
-                prev_window = (window*-1)
+                switch.append(1)
+                prev_window = (window*-1) # also switch window which becomes next previous
+            
+            # current window closer to unswitched previous window --> encode it as 0 (=keep)
             else:
-                out.append(-1)
-                prev_window = window
-    
-        rows_lst.append(out)
+                switch.append(-1)
+                prev_window = window # don't switch previous window (next reference)
+        
+        # add switch for this sample to sample_switch_lst
+        sample_switch_lst.append(switch)
 
-    # sum up values from each row and save to switch_lst
-    rows_arr = np.array(rows_lst, dtype=int).transpose()
-    switch_lst = list(rows_arr.sum(axis=1))
+    # combine list of per sample per window switch weightings into an array
+    sample_switch_arr = np.array(sample_switch_lst, dtype=int).transpose()
 
-    # switch individual windows according to switch_lst (switch if value is negative)
-    for idx, val in zip(list(w_pca_df.columns), switch_lst):
+    # get the row sums from sample_switch_arr (if sum/balance > 0 this means switch)
+    switch_balance_lst = list(sample_switch_arr.sum(axis=1))
+
+    # switch individual windows according to switch_balance_lst (switch if value is positive)
+    for idx, val in zip(list(w_pca_df.columns), switch_balance_lst):
         if val < 0:
             w_pca_df[idx] = w_pca_df[idx]*-1
 
@@ -191,20 +150,40 @@ def plot_w_pca(w_pca_df, pc, color_taxon, chrom, start, stop, w_size, w_step):
     Plot one PC for all included sampled along the chromosome
     '''
 
-    fig = px.line(w_pca_df, x='window_mid', y='pc_' + str(pc), line_group='id', color=color_taxon, hover_name='id', 
-                    hover_data=[x for x in list(w_pca_df.columns) if x not in ['window_mid', 'pc_' + str(pc)]],
-                    width=(stop-start)/20000, height=500,
-                    title=str('<b>Windowed PC ' + str(pc) + ' of ' + chrom + ':' + str(start) + '-' + str(stop) + '</b><br> (window size: ' + str(w_size) + ' bp, window step: ' + str(w_step) + ' bp)'), 
-                    labels = dict(pc_1 = '<b>PC 1<b>', pc_2 = '<b>PC 2<b>', window_mid = '<b>Genomic position<b>'))
+    # compile dct that sets hover data for html display
+    hover_data_dct = {x: True for x in w_pca_df.columns}
+    hover_data_dct['pc_' + str(pc)] = False
 
-    fig.update_layout(template='simple_white', font_family='Arial', font_color='black',
-                    xaxis=dict(ticks='outside', mirror=True, showline=True),
-                    yaxis=dict(ticks='outside', mirror=True, showline=True),
-                    legend={'traceorder':'normal'}, 
-                    title={'xanchor': 'center', 'y': 0.9, 'x': 0.45})
+    # plot
+    fig = px.line(
+        w_pca_df,
+        x='window_mid',
+        y='pc_' + str(pc),
+        width=(stop-start)/20000, height=500,
+        line_group='id',
+        color=color_taxon,
+        hover_name='id', 
+        hover_data=hover_data_dct,
+        title=str('<b>Windowed PC ' + str(pc) + ' of ' + chrom + ':' + str(start) + '-' + 
+                  str(stop) + '</b><br> (window size: ' + str(w_size) + ' bp, window step: ' + 
+                  str(w_step) + ' bp)'), 
+        labels = dict(window_mid = 'position'),
+    )
 
+    # adjust layout
+    fig.update_layout(
+        template='simple_white',
+        font_family='Arial',
+        font_color='black',
+        xaxis=dict(ticks='outside', mirror=True, showline=True, title='<b>Genomic position<b>'),
+        yaxis=dict(ticks='outside', mirror=True, showline=True, title='<b>PC ' + str(pc) + '<b>'),
+        legend={'traceorder':'normal'}, 
+        title={'xanchor': 'center', 'y': 0.9, 'x': 0.45})
+
+    # set x axis range
     fig.update_xaxes(range=[start, stop])
 
+    # set line width
     fig.update_traces(line=dict(width=0.5))
 
     return fig
@@ -214,7 +193,9 @@ def plot_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w):
     '''
     Plot per windowstats: % explained by PC1 and PC2 + # of variants per window
     '''
+
     global missing_stretches # delete
+    
     # for simplicity
     go = plotly.graph_objects
     
@@ -256,49 +237,66 @@ def plot_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w):
         secondary_y=False
     )
 
+    # check if there are gaps:
+    gaps = w_stats_df.isnull().values.any()
+
     # plotly has a bug: if filling the area under the curve, the 'fill' doesn't break at missing 
     # data even when specifying connectgaps=True --> therefore, plot white rectangles on top to 
     # cover the missing data stretches
-    missing_stretches, stretch = [], []
-    pc_1_max = max(w_stats_df['pct_explained_pc_1'])
-    for w_mid, n_variants in zip(w_stats_df.index, w_stats_df['n_variants']):
-        if n_variants >= min_var_per_w:
-            if stretch:
-                missing_stretches.append(stretch)
-                stretch = []
-        else: stretch.append(w_mid)
-    if stretch: missing_stretches.append(stretch)
-    for stretch in missing_stretches:
+    if gaps:
+        missing_stretches, stretch = [], []
+        pc_1_max = max(w_stats_df['pct_explained_pc_1'])
+        for w_mid, n_variants in zip(w_stats_df.index, w_stats_df['n_variants']):
+            if n_variants >= min_var_per_w:
+                if stretch:
+                    missing_stretches.append(stretch)
+                    stretch = []
+            else: stretch.append(w_mid)
+        if stretch: missing_stretches.append(stretch)
+        for stretch in missing_stretches:
+            fig.add_trace(
+                go.Scatter(
+                    x=[stretch[0], stretch[-1], stretch[-1], stretch[0]], 
+                    y=[0, 0, pc_1_max, pc_1_max], 
+                    fill='toself',
+                    mode='none',
+                    fillcolor='white',
+                    hoverinfo='skip',
+                    showlegend=False,
+                )
+            )
+        
+        # fill only regions between min_var_per_w and n_variants if n_variants < min_var_per_w this 
+        # requires some hacks, such as adding a dummy datapoint at ± 0.0001 around missing stretches 
+        # to delimit grey filled areas
+        w_stats_gaps_df = w_stats_df.loc[w_stats_df['n_variants'] < min_var_per_w][['n_variants']]
+        gap_edges = [x[0]-0.0001 for x in missing_stretches] + [x[-1]+0.0001 for x in missing_stretches]
+        gap_edges_df = pd.DataFrame([min_var_per_w] * len(gap_edges), gap_edges, columns=['n_variants'])
+        w_stats_gaps_df = pd.concat([w_stats_gaps_df, gap_edges_df]).sort_index()
         fig.add_trace(
             go.Scatter(
-                x=[stretch[0], stretch[-1], stretch[-1], stretch[0]], 
-                y=[0, 0, pc_1_max, pc_1_max], 
-                fill='toself',
-                mode='none',
-                fillcolor='white',
+                x=w_stats_gaps_df.index,
+                y=w_stats_gaps_df['n_variants'],
+                mode='lines',
+                line=dict(color='rgba(0, 0, 0, 0)'),
                 hoverinfo='skip',
                 showlegend=False,
-            )
+            ),
+            secondary_y=True,
         )
-        
-    # fill only regions between min_var_per_w and n_variants if n_variants < min_var_per_w this 
-    # requires some hacks, such as adding a dummy datapoint at ± 0.0001 around missing stretches to 
-    # delimit grey filled areas
-    w_stats_gaps_df = w_stats_df.loc[w_stats_df['n_variants'] < min_var_per_w][['n_variants']]
-    gap_edges = [x[0]-0.0001 for x in missing_stretches] + [x[-1]+0.0001 for x in missing_stretches]
-    gap_edges_df = pd.DataFrame([min_var_per_w] * len(gap_edges), gap_edges, columns=['n_variants'])
-    w_stats_gaps_df = pd.concat([w_stats_gaps_df, gap_edges_df]).sort_index()
-    fig.add_trace(
-        go.Scatter(
-            x=w_stats_gaps_df.index,
-            y=w_stats_gaps_df['n_variants'],
-            mode='lines',
-            line=dict(color='rgba(0, 0, 0, 0)'),
-            hoverinfo='skip',
-            showlegend=False,
-        ),
-        secondary_y=True,
-    )
+        # (invisible) horizontal line just to fill the grey area in gaps
+        fig.add_trace(
+            go.Scatter(
+                x=[start, stop],
+                y=[min_var_per_w, min_var_per_w],
+                mode='lines',
+                line=dict(color='rgba(0, 0, 0, 0)'),
+                fill='tonexty',
+                hoverinfo='skip',
+                showlegend=False
+            ),
+            secondary_y=True,
+        )
 
     # horizontal line to show min_var_per_w threshold
     fig.add_trace(
@@ -307,7 +305,6 @@ def plot_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w):
             y=[min_var_per_w, min_var_per_w],
             mode='lines',
             line=dict(color='#595959', dash='dot', width=1),
-            fill='tonexty',
             hoverinfo='skip',
             showlegend=False
         ),
@@ -336,11 +333,6 @@ def plot_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w):
             mode='lines',
             line=dict(color='#595959', dash='dot', width=1)
         ),
-        secondary_y=True,
-    )
-
-    fig.add_hline(
-        y=min_var_per_w,
         secondary_y=True,
     )
 
