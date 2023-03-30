@@ -1,25 +1,31 @@
-
+## Dependencies
 import sys
 import gzip
 
 
-def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_step, func, skip_monomorphic=False):
+
+## Parsing called genotypes from genotype file or from VCF
+
+def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_step, func, \
+                skip_monomorphic=False):
     '''
-    Apply a target function to windows of variants in an (optionally gzipped) genotype file (limited to one chromosome)
+    Apply a target function to windows of variants in an (optionally gzipped) genotype file
+    (limited to one chromosome)
     '''
 
     def init_win(w_start, w_stop, w_idx, win, w_size, w_step):
         '''
-        Initialize new window by shifting one w_step and dropping obsolete variants
+        Initialize new window by shifting one w_step and dropping obsolete variants from previous 
+        window
         '''
 
         w_start = w_start + w_step
         w_stop = w_start + w_size-1
         w_idx += 1
-
         win = [x for x in win if x[0] >= w_start]
 
-        print('[INFO] Processed ' + '' + str(w_idx) + ' of ' + str(n_windows) + ' windows', file=sys.stderr, flush=True) 
+        print('[INFO] Processed ' + '' + str(w_idx) + ' of ' + str(n_windows) + ' windows',
+              file=sys.stderr, flush=True)
 
         return w_start, w_stop, w_idx, win
 
@@ -34,7 +40,6 @@ def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_s
         # fetch sample ids from header and derive sample index positions
         gt_file_sample_lst = gt_file.readline().strip().split('\t')[2:]
         sample_idx_lst = [gt_file_sample_lst.index(x) for x in target_sample_lst]
-        #next(gt_file) IS THIS STILL REQUIRED??? --> remove
 
         # initiate first window
         w_start = start
@@ -62,32 +67,40 @@ def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_s
                 if win: func(win, w_start, w_size)
                 
                 # initialize
-                w_start, w_stop, w_idx, win = init_win(w_start, w_stop, w_idx, win, w_size, w_step)
+                w_start, w_stop, w_idx, win = init_win(
+                    w_start, w_stop,
+                    w_idx, win,
+                    w_size, w_step)
                 if stop < w_stop: break
 
-            # append pos (and genotypes) to current window
-            win.append([pos] + gts)
+            # append pos (and genotypes) to current window if larger than window start
+            if pos > w_start: win.append([pos] + gts)
 
             # if end of window is reached: apply function & initialize
             if w_stop <= pos:
+                
                 func(win, w_start, w_size)
-                w_start, w_stop, w_idx, win = init_win(w_start, w_stop, w_idx, win, w_size, w_step)
                 if stop < w_stop: break
-
+                w_start, w_stop, w_idx, win = init_win(
+                    w_start, w_stop,
+                    w_idx, win,
+                    w_size, w_step)
+                
     # print exit message
     print('\n[INFO] Processed all windows', file=sys.stderr, flush=True)
 
 
-
-
-def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, func, skip_monomorphic=False):
+def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, func, \
+            skip_monomorphic=False):
     '''
-    Apply a target function to windows of variants in an (optionally gzipped) genotype file (limited to one chromosome)
+    Apply a target function to windows of variants in an (optionally gzipped) genotype file 
+    (limited to one chromosome)
     '''
 
     def init_win(w_start, w_stop, w_idx, win, w_size, w_step):
         '''
-        Initialize new window by shifting one w_step and dropping obsolete variants
+        Initialize new window by shifting one w_step and dropping obsolete variants from previous 
+        window
         '''
 
         w_start = w_start + w_step
@@ -96,7 +109,8 @@ def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, fun
 
         win = [x for x in win if x[0] >= w_start]
 
-        print('[INFO] Processed ' + '' + str(w_idx) + ' of ' + str(n_windows) + ' windows', file=sys.stderr, flush=True) 
+        print('[INFO] Processed ' + '' + str(w_idx) + ' of ' + str(n_windows) + ' windows',
+              file=sys.stderr, flush=True) 
 
         return w_start, w_stop, w_idx, win
 
@@ -173,14 +187,28 @@ def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, fun
                 if win: func(win, w_start, w_size)
                 
                 # initialize
-                w_start, w_stop, w_idx, win = init_win(w_start, w_stop, w_idx, win, w_size, w_step)
+                w_start, w_stop, w_idx, win = init_win(
+                    w_start, w_stop,
+                    w_idx, win,
+                    w_size, w_step)
                 if stop < w_stop: break
 
             # append pos (and genotypes) to current window
-            win.append([pos] + gts)
+            if pos > w_start: win.append([pos] + gts)
 
             # if end of window is reached: apply function & initialize
             if w_stop <= pos:
                 func(win, w_start, w_size)
-                w_start, w_stop, w_idx, win = init_win(w_start, w_stop, w_idx, win, w_size, w_step)
                 if stop < w_stop: break
+                w_start, w_stop, w_idx, win = init_win(
+                    w_start, w_stop,
+                    w_idx, win,
+                    w_size, w_step)
+
+    # print exit message
+    print('\n[INFO] Processed all windows', file=sys.stderr, flush=True)
+
+
+## Parsing genotype likelihoods from BEAGLE file
+
+# ...
