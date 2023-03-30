@@ -7,15 +7,10 @@ import plotly, plotly.express as px
 
 ## Windowed pca scripts
 
-def read_metadata(variant_file_path, metadata_path, taxon=None, group=None):
+def read_metadata(metadata_path, variant_file_sample_lst, taxon=None, group=None):
     '''
     Read in metadata, optionally filter by taxon ?and sort by gt_file sample order?
     '''
-
-    # fetch sample names from genotype file header
-    read_func = gzip.open if variant_file_path.endswith('.gz') else open
-    with read_func(variant_file_path, 'rt') as gt_file:
-        samples_lst = gt_file.readline().strip().split('\t')[2:]
 
     # read in metadata
     metadata_df = pd.read_csv(
@@ -31,17 +26,9 @@ def read_metadata(variant_file_path, metadata_path, taxon=None, group=None):
         metadata_df = metadata_df.loc[metadata_df[taxon].isin(group.split(','))]
     
     # remove individuals that are not in the genotype file
-    exclude_lst = [x for x in list(metadata_df['id']) if x not in samples_lst]
+    exclude_lst = [x for x in list(metadata_df['id']) if x not in variant_file_sample_lst]
     for i in exclude_lst:
         metadata_df.drop(metadata_df[metadata_df['id'] == i].index, inplace=True)
-    
-    # # get index of samples kept after filtering
-    # sample_idx_lst = sorted([samples_lst.index(x) for x in list(metadata_df['id'])])
-    # keep_id_lst = [samples_lst[x] for x in sample_idx_lst]
-
-    # # sort metadata by VCF sample order 
-    # metadata_df['id'] = pd.Categorical(metadata_df['id'], categories = keep_id_lst, ordered = True)
-    # metadata_df.sort_values('id', inplace=True)
 
     return metadata_df
 
