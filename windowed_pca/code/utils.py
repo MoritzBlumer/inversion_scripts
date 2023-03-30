@@ -140,7 +140,12 @@ def annotate(w_pca_df, metadata_df, pc):
     w_pca_df = w_pca_df.replace(np.nan, 'NA')
 
     # convert to long format for plotting
-    w_pca_anno_df = pd.melt(w_pca_df, id_vars=metadata_df.columns, var_name='window_mid', value_name=pc)
+    w_pca_anno_df = pd.melt(
+        w_pca_df,
+        id_vars=metadata_df.columns,
+        var_name='window_mid',
+        value_name=pc,
+    )
 
     return w_pca_anno_df
 
@@ -267,11 +272,16 @@ def plot_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w):
             )
         
         # fill only regions between min_var_per_w and n_variants if n_variants < min_var_per_w this 
-        # requires some hacks, such as adding a dummy datapoint at ± 0.0001 around missing stretches 
-        # to delimit grey filled areas
+        # requires some hacks, such as adding a dummy datapoint at ± 0.0001 around missing 
+        # stretches to delimit grey filled areas
         w_stats_gaps_df = w_stats_df.loc[w_stats_df['n_variants'] < min_var_per_w][['n_variants']]
-        gap_edges = [x[0]-0.0001 for x in missing_stretches] + [x[-1]+0.0001 for x in missing_stretches]
-        gap_edges_df = pd.DataFrame([min_var_per_w] * len(gap_edges), gap_edges, columns=['n_variants'])
+        gap_edges = [x[0]-0.0001 for x in missing_stretches] + \
+                    [x[-1]+0.0001 for x in missing_stretches]
+        gap_edges_df = pd.DataFrame(
+            [min_var_per_w] * len(gap_edges),
+            gap_edges, 
+            columns=['n_variants'],
+        )
         w_stats_gaps_df = pd.concat([w_stats_gaps_df, gap_edges_df]).sort_index()
         fig.add_trace(
             go.Scatter(
