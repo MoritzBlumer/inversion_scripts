@@ -18,6 +18,11 @@ def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_s
         Initialize new window by shifting one w_step and dropping obsolete variants from previous 
         window
         '''
+        print(str(w_start) + '-' + str(w_stop), win[0][0], win[-1][0], file=sys.stderr, flush=True)
+        if w_start > win[0][0] or w_stop < win[-1][0]:
+            print('HEEEEEELP', file=sys.stderr, flush=True)
+        if w_idx > 490:
+            print([x[0] for x in win], file=sys.stderr, flush=True)
 
         w_start = w_start + w_step
         w_stop = w_start + w_size-1
@@ -32,6 +37,7 @@ def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_s
 
     # calculate total number of windows
     n_windows = len(list(range(start, stop-w_size+2, w_step)))
+    print(n_windows, file=sys.stderr, flush=True)
 
     # open uncompressed or gzip-compressed input file
     read_func = gzip.open if gt_file_path.endswith('.gz') else open
@@ -63,22 +69,20 @@ def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_s
             # case: pos exceeds current window
             while w_stop < pos:
                 
-                # if window contains variants: apply function 
+                # if window contains variants: apply function
                 if win: func(win, w_start, w_size)
-                
-                # initialize
+                if stop < w_stop: break
                 w_start, w_stop, w_idx, win = init_win(
                     w_start, w_stop,
                     w_idx, win,
                     w_size, w_step)
-                if stop < w_stop: break
+                
 
             # append pos (and genotypes) to current window if larger than window start
             if pos > w_start: win.append([pos] + gts)
 
             # if end of window is reached: apply function & initialize
             if w_stop <= pos:
-                
                 func(win, w_start, w_size)
                 if stop < w_stop: break
                 w_start, w_stop, w_idx, win = init_win(
@@ -183,15 +187,13 @@ def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, fun
             # case: pos exceeds current window
             while w_stop < pos:
                 
-                # if window contains variants: apply function 
+                # if window contains variants: apply function
                 if win: func(win, w_start, w_size)
-                
-                # initialize
+                if stop < w_stop: break
                 w_start, w_stop, w_idx, win = init_win(
                     w_start, w_stop,
                     w_idx, win,
                     w_size, w_step)
-                if stop < w_stop: break
 
             # append pos (and genotypes) to current window
             if pos > w_start: win.append([pos] + gts)
