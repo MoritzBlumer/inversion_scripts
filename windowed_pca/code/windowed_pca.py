@@ -79,7 +79,7 @@ def parse_arguments():
     stop = region.split(':')[1].split('-')[1]
 
     # change str to int where appropriate
-    start, stop, w_size, w_step = int(start), int(stop), int(w_size), int(w_step)
+    start, stop, w_size, w_step, pc = int(start), int(stop), int(w_size), int(w_step), int(pc)
     
     # change output_prefix to lower case
     output_prefix = output_prefix.lower()
@@ -144,6 +144,7 @@ def windowed_pca(variant_file_path, chrom, start, stop, metadata_df, w_size, w_s
     '''
     Window-by-window analysis
     '''
+    
     global w_mid_lst, w_pca_lst, w_stats_lst
 
     # initialize results containers
@@ -198,6 +199,7 @@ def windowed_pca(variant_file_path, chrom, start, stop, metadata_df, w_size, w_s
 
 def main():
 
+    # parse command line arguments
     parse_arguments()
 
     # compile text and stats figure output files (pc figure depends on color taxon --> see below)
@@ -231,6 +233,7 @@ def main():
             index_col=[0],
             na_values='NA',
         )
+        w_pca_df.columns = [int(x) for x in w_pca_df.columns] # change column name dtype to int
         w_stats_df = pd.read_csv(
             w_stats_tsv_path,
             sep='\t',
@@ -253,7 +256,6 @@ def main():
         from utils import polarize
         w_pca_df = polarize(
             w_pca_df,
-            var_threshold=var_threshold,
             mean_threshold=mean_threshold,
             guide_samples=False,
         )
