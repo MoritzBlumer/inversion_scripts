@@ -2,6 +2,14 @@
 
 ![example_plot](windowed_pca.png)
 
+# PLEASE NOTE: 
+This is an improved version of earlier versions. It has been tested extensively and should produce identical results, but please let me know if you notice any issues
+The main improvements include:
+- instead of loading the entire genotype file into memory, only the current window is read, which should greatly reduce memory requirements (and potentially speed)
+- VCF support was added
+- plotting of per window stats was improved
+
+
 - useful to explore the variation/divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
 - generates PDF and interactive HTML plots (using plotly)
 - input files: genotype file (easy to obtain from VCF) and a metadata file (details below)
