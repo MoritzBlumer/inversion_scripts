@@ -18,26 +18,22 @@ def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_s
         Initialize new window by shifting one w_step and dropping obsolete variants from previous 
         window
         '''
-        print(str(w_start) + '-' + str(w_stop), win[0][0], win[-1][0], file=sys.stderr, flush=True)
-        if w_start > win[0][0] or w_stop < win[-1][0]:
-            print('HEEEEEELP', file=sys.stderr, flush=True)
-        if w_idx > 490:
-            print([x[0] for x in win], file=sys.stderr, flush=True)
 
         w_start = w_start + w_step
         w_stop = w_start + w_size-1
         w_idx += 1
         win = [x for x in win if x[0] >= w_start]
 
-        print('[INFO] Processed ' + '' + str(w_idx) + ' of ' + str(n_windows) + ' windows',
-              file=sys.stderr, flush=True)
+        print(
+            '[INFO] Processed ' + '' + str(w_idx) + ' of ' + str(n_windows) + ' windows',
+              file=sys.stderr, flush=True,
+            )
 
         return w_start, w_stop, w_idx, win
 
 
     # calculate total number of windows
     n_windows = len(list(range(start, stop-w_size+2, w_step)))
-    print(n_windows, file=sys.stderr, flush=True)
 
     # open uncompressed or gzip-compressed input file
     read_func = gzip.open if gt_file_path.endswith('.gz') else open
@@ -91,7 +87,10 @@ def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_s
                     w_size, w_step)
                 
     # print exit message
-    print('\n[INFO] Processed all windows', file=sys.stderr, flush=True)
+    print(
+        '\n[INFO] Processed all windows',
+        file=sys.stderr, flush=True,
+    )
 
 
 def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, func, \
@@ -113,8 +112,10 @@ def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, fun
 
         win = [x for x in win if x[0] >= w_start]
 
-        print('[INFO] Processed ' + '' + str(w_idx) + ' of ' + str(n_windows) + ' windows',
-              file=sys.stderr, flush=True) 
+        print(
+            '[INFO] Processed ' + '' + str(w_idx) + ' of ' + str(n_windows) + ' windows',
+              file=sys.stderr, flush=True
+        ) 
 
         return w_start, w_stop, w_idx, win
 
@@ -208,7 +209,10 @@ def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, fun
                     w_size, w_step)
 
     # print exit message
-    print('\n[INFO] Processed all windows', file=sys.stderr, flush=True)
+    print(
+        '\n[INFO] Processed all windows',
+        file=sys.stderr, flush=True,
+    )
 
 
 ## Parsing genotype likelihoods from BEAGLE file
