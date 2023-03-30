@@ -19,6 +19,7 @@ import sys, os
 import numpy as np
 import pandas as pd
 import allel
+import gzip
 
 
 
@@ -37,7 +38,7 @@ def parse_arguments():
         color_taxon, guide_samples = sys.argv
 
     # print help message if incorrect number of arguments was specified
-    if len(sys.argv) != 12:
+    if len(sys.argv) < 12:
         print(
             '   python windowed_pca.py <variant file> <metadata> <output prefix> <region>\n\
                                 <window size> <window step size> <pc> <filter column name>\n\
@@ -86,6 +87,25 @@ def parse_arguments():
     
     # change output_prefix to lower case
     output_prefix = output_prefix.lower()
+
+
+def fetch_variant_file_samples(variant_file_path):
+    '''
+    Fetch sample ids from variant file (used by metadata)
+    '''
+    read_func = gzip.open if variant_file_path.endswith('.gz') else open
+    # vcf
+    if variant_file_path.endswith('.vcf') or variant_file_path.endswith('.vcf.gz'):
+        with read_func(variant_file_path, 'rt') as vcf:
+            for line in vcf:
+                if line.startswith('#CHROM'):
+                    variant_file_sample_lst = line.strip().split('\t')[9:]
+    # genotype file
+    elif variant_file_path.endswith('.tsv') or variant_file_path.endswith('.tsv.gz'):
+        with read_func(variant_file_path, 'rt') as gt_file:
+            variant_file_sample_lst = gt_file.readline().strip().split('\t')[2:]
+
+    return variant_file_sample_lst
 
 
 def pca(win, w_start, w_size):
@@ -216,13 +236,16 @@ def main():
     w_stats_fig_html_path = output_prefix + '.w_stats'         + '.html'
     w_stats_fig_pdf_path =  output_prefix + '.w_stats'         + '.pdf'
 
+    # fetch sample ids from variant file
+    variant_file_sample_lst = fetch_variant_file_samples(variant_file_path)
+
     # read metadata
     from utils import read_metadata
     metadata_df = read_metadata(
-        variant_file_path,
         metadata_path,
-        taxon='species',
-        group='species_1,species_2',
+        variant_file_sample_lst,
+        taxon=taxon,
+        group=group,
     )
 
     # check if IDs are unique
