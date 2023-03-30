@@ -38,7 +38,8 @@ def parse_arguments():
 
     # print help message if incorrect number of arguments was specified
     if len(sys.argv) != 12:
-        print('   python windowed_pca.py <variant file> <metadata> <output prefix> <region>\n\
+        print(
+            '   python windowed_pca.py <variant file> <metadata> <output prefix> <region>\n\
                                 <window size> <window step size> <pc> <filter column name>\n\
                                 <filter column value> <color column name>\n\
                                 <guide samples>\n\n\
@@ -71,7 +72,9 @@ def parse_arguments():
                                         generated for each color scheme\n\
             <guide samples>        str  [optional] list of samples to use for\n\
                                         polarization, e.g. "ind1,ind2,ind3"\n\
-                                        (details --> README)', file=sys.stderr)
+                                        (details --> README)',
+        file=sys.stderr,
+        )
 
     # fetch chrom, start, stop from regions string
     chrom = region.split(':')[0]
@@ -202,6 +205,11 @@ def main():
     # parse command line arguments
     parse_arguments()
 
+    # make output directory if output_prefix contains '/'
+    if '/' in output_prefix:
+        if not os.path.exists('/'.join(output_prefix.split('/')[-1]) + '/'):
+            os.makedirs(output_prefix)
+
     # compile text and stats figure output files (pc figure depends on color taxon --> see below)
     w_pca_tsv_path =        output_prefix + '.w_pc_' + str(pc) + '.tsv.gz'
     w_stats_tsv_path =      output_prefix + '.w_stats'         + '.tsv.gz'
@@ -220,20 +228,24 @@ def main():
     # check if IDs are unique
     if not len(metadata_df['id']) == len(set(metadata_df['id'])):
         print(
-            '[ERROR] Duplicate sample IDs (first metadata column)',
-            file=sys.stderr, flush=True
+            '\n[ERROR] Duplicate sample IDs (first metadata column)\n',
+            file=sys.stderr, flush=True,
         )
         sys.exit()
 
     # if there is output from a previous run, use it
     if os.path.exists(w_pca_tsv_path) and os.path.exists(w_stats_tsv_path):
+        print(
+            '\n[INFO] Plotting data from previous run',
+            file=sys.stderr, flush=True,
+        )
         w_pca_df = pd.read_csv(
             w_pca_tsv_path,
             sep='\t',
             index_col=[0],
             na_values='NA',
         )
-        w_pca_df.columns = [int(x) for x in w_pca_df.columns] # change column name dtype to int
+        w_pca_df.columns = [float(x) for x in w_pca_df.columns] # change column name dtype to int
         w_stats_df = pd.read_csv(
             w_stats_tsv_path,
             sep='\t',
@@ -242,7 +254,11 @@ def main():
         )
     
     else:
-
+        print(
+            '\n[INFO] Conducting windowed PCA\n',
+            file=sys.stderr, flush=True,
+        )
+                
         # run windowed PCA
         w_pca_df, w_stats_df = windowed_pca(
             variant_file_path,
@@ -261,6 +277,10 @@ def main():
         )
 
         # save output data before annotation if not already present
+        print(
+            '\n[INFO] Writing output TSVs',
+            file=sys.stderr, flush=True,
+        )
         w_pca_df.to_csv(
             w_pca_tsv_path,
             sep='\t',
@@ -288,6 +308,10 @@ def main():
     del w_pca_df
 
     # plot windowed PCA output & save
+    print(
+            '\n[INFO] Generating output HTMLs & PDFs',
+            file=sys.stderr, flush=True,
+    )
     from utils import plot_w_pca
     for c_taxon in color_taxon.split(','): 
 
@@ -328,6 +352,11 @@ def main():
     w_stats_fig.write_image(
         w_stats_fig_pdf_path,
         engine='kaleido', scale=2.4
+    )
+
+    print(
+        '\n[INFO] Done\n',
+        file=sys.stderr, flush=True,
     )
 
 if __name__ == '__main__':
