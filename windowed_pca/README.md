@@ -68,8 +68,8 @@ python3 windowed_pca.py variant_file_path, metadata_path, output_prefix, region,
 | **filter column name** | str | metadata column name to filter for individuals to includede in the analysis, e.g. 'genus' (see <filter column value>) |
 | **filter column value** | str | value to be filtered for in filter column; Setting *filter column name* to 'genus' and *filter column value* to 'Homo' would include all individuals of the genus _Homo_ in the output, while ignoring all others. (a comma-separated list of include values is accepted, e.g. 'Homo,Pan') |
 | **color column name** | str | metadata column to assign colors by in the output plot; if selecting 'genus', all individuals from the same genus will have the same color in the output plots; if specifying a comma-separated list like 'genus,species', one output plot is generated for each color scheme |
-| **color column name** | str |[optional] list of samples to use for polarization, e.g. 'ind1,ind2,ind3' (details --> README)' |
-| **guide samples** | str | [optional] list of samples to use for polarization, e.g. "ind1,ind2,ind3"; set 'None' for automatic guide sample selection |
+| **color column name** | str |metadata column to assign colors by in the output plot; if selecting 'genus', all individuals from the same genus will have the same color in the output plots; if specifying a comma-separated list like 'genus,species', one output plot is generated for each color scheme |
+| **guide samples** | str | [optional] list of samples to use for polarization, e.g. 'ind1,ind2,ind3'; set 'None' for automatic guide sample selection |
 
 #### Sample prompt 
 ```
@@ -78,13 +78,13 @@ python3 code/windowed_pca.py test_dataset/input/sample_vcf.gz test_dataset/input
 - the variant file (```test_dataset/input/sample_vcf.gz``` this could also be ```test_dataset/input/genotype_file.tsv.gz```) and metadata file (```test_dataset/input/metadata.tsv```) are used as input files <genotype 
 file> and <metadata>
 - ```test_dataset/output/``` is set as the <output prefix>, which tells the script to create a new output directory ```test_dataset/output/``` (if it doesn't exist), and to create all output files therein
-- <region> to analyze here is the entire chromosome 1 (```chr1:1-35000000```), but could also be a sub set of the chromosome (e.g. ```chr1:1000000-8000000```)
+- <region> to analyze here is the entire chromosome 1 ('chr1:1-35000000'), but could also be a sub set of the chromosome (e.g. 'chr1:1000000-8000000')
 - <window size> is set to 1 Mbp ('1000000'), because the sample dataset is downsampled to 10% of the original SNPs, and a relatively large window size is required to have enough (>100) variants per window
 - <step size> is set to 100,000 bp ('100000'), resulting in overlapping windows
-- <pc> is set to 
-- <filter column name> is set to 'id' and <filter column value> to the previously defined $sample_ids variable to provide a list of samples to include (since \$sample_ids contains all samples in the metadata, all samples are included; to include e.g. only samples from species_1, set <filter column value> to 'species' and <filter column name> to 'species_1')
-- <color column name> is set to 'inversion_state', resulting in all individuals with the same inversion states having the same color in the output sliding window plot
-- <variance threshold> and <mean threshold> are set to the default values, for details see source code.
+- <pc> is set to '1' to analyze principal component 1 (the other option would be '2' for PC 2)
+- <filter column name> is set to the metadata column 'id' and <filter column value> to the a list of sample ids to include; to include e.g. only samples from species_1, set <filter column value> to 'species' and <filter column name> to 'species_1')
+- <color column name> is set to 'inversion_state', resulting in all individuals with the same inversion states having the same color in the output w_pc_1 plot
+- <guide samples> is set to 'ind_7,ind_8,ind_9' to use these specific samples for polarization of the PC axis for plotting
 
 
 ### Preparing a genotype file from a VCF file (biallelic SNPs)
