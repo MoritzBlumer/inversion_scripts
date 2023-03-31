@@ -71,9 +71,10 @@ def parse_arguments():
                                         specifying a comma-separated list like \n\
                                         "genus,species", one output plot is \n\
                                         generated for each color scheme\n\
-            <guide samples>        str  [optional] list of samples to use for\n\
-                                        polarization, e.g. "ind1,ind2,ind3"\n\
-                                        (details --> README)',
+            <guide samples>        str  list of samples to use forpolarization,\n\
+                                        e.g. "ind1,ind2,ind3"; specify 'None' for\n\
+                                        automatic guide sample selection(details\n\
+                                        --> README)',
         file=sys.stderr,
         )
 
