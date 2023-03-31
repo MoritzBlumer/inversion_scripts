@@ -1,7 +1,6 @@
 # Conduct PCAs in in genomic windows (using scikit-allel)
 
-![example_plot](.media/windowed_pca.html)
-![](./test.svg)
+![example_plot](.media/windowed_pca.png)
 
 # PLEASE NOTE: 
 This is an improved version of earlier versions. It has been tested extensively and should produce identical results, but please let me know if you notice any issues
