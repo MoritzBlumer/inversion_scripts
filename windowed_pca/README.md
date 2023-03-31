@@ -53,7 +53,7 @@ ind_9   18X     species_2       uninverted
 The python script requires 12 positional arguments, which are explained in more detail below:
 
 ```
-python3 windowed_pca.py variant_file_path, metadata_path, output_prefix, region, w_size, w_step, pc, taxon, group, color_taxon, guide_samples
+python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <winow size>, <window step>, <pc>, <filter column name>, <filter column value> <color column name> <guide samples>
 ```
 
 | Argument | Type | Description |
@@ -68,7 +68,6 @@ python3 windowed_pca.py variant_file_path, metadata_path, output_prefix, region,
 | **filter column name** | str | metadata column name to filter for individuals to includede in the analysis, e.g. 'genus' (see <filter column value>) |
 | **filter column value** | str | value to be filtered for in filter column; Setting *filter column name* to 'genus' and *filter column value* to 'Homo' would include all individuals of the genus _Homo_ in the output, while ignoring all others. (a comma-separated list of include values is accepted, e.g. 'Homo,Pan') |
 | **color column name** | str | metadata column to assign colors by in the output plot; if selecting 'genus', all individuals from the same genus will have the same color in the output plots; if specifying a comma-separated list like 'genus,species', one output plot is generated for each color scheme |
-| **color column name** | str |metadata column to assign colors by in the output plot; if selecting 'genus', all individuals from the same genus will have the same color in the output plots; if specifying a comma-separated list like 'genus,species', one output plot is generated for each color scheme |
 | **guide samples** | str | [optional] list of samples to use for polarization, e.g. 'ind1,ind2,ind3'; set 'None' for automatic guide sample selection |
 
 #### Sample prompt 
@@ -145,10 +144,9 @@ Six output files are created by default, which can be grouped as follows:
 
 
 ### Notes:
-- Any biallelic variants can be used as lng as the are encoded as 0 (hom ref), 1 (het), 2 (hom alt). I have used InDels smaller 20 bp before and got nice results
+- Any biallelic variants can be used as lng as the are encoded as 0 (hom ref), 1 (het), 2 (hom alt). I have used InDels smaller 20 bp (instead of SNPs) before and got nice results
 - All columns in metadata will be included in hover display in HTML plots
-- If output files (TSVs) from a previous run are detected (same output prefix), they will be reused for plitting instead of calculating new ones. This is useful to adjust the color scheme of the plots. To rerun everything from scratch, delete any existing output files.
-- The threshold for the minimum number of SNPs per window is 100 and can be adjusted in the script. The lower the threshold, the noisier the plots.
-- By default, plots are only produced for PC1, but it is easy to enable the creation of PC2 plots as well (takes 1 minute, see script for instructions)
-- A major challenge for windowed PCAs is that the PCA in each window is conducted independently, and its rotation per principal component is thus random. This results in random switching along the component axis in the raw data, and very noisy plots. This script implements a correction step that aims at polarizing the orientation based on variance and mean of the previous window, using a specified number of the individuals with the most extreme values across the entire dataset (parameters <variance threshold> and <mean threshold>). This gives acceptable results for many tested datasets, but is not always ideal. It s sometimes worth testing different parameter combinations for <variance threshold> and <mean threshold>. If you have a better idea for the correction step, please let me know.
+- If output files (TSVs) from a previous run are detected (same output prefix), they will be reused for plotting instead of calculating new ones. This is useful to adjust the color scheme of the plots. To rerun everything from scratch, delete existing output files.
+- The threshold for the minimum number of SNPs per window is 50 and can be adjusted at the top of windowed_pca.py.
+- A major challenge for windowed PCAs is that the PCA in each window is conducted independently, and rotation is random. This results in random switching of window polarization along the component axis in the raw data, and very noisy plots. The script implements a correction step that aims at polarizing the orientation based on variance and mean of the previous window, using a specified number of the individuals with the most extreme values across the entire dataset (parameters <variance threshold> and <mean threshold>) as guide samples. This gives acceptable results for many tested datasets, but is not always ideal. After the first round of plotting, specific samples can often be visually determined which would make good guide samples (i.e. samples that are always >0 or always <0. A single guide sample can be sufficient for correct polarization.
 - please contact me if you have any questions or run into problems
