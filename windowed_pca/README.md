@@ -11,7 +11,7 @@ The main improvements include:
 - improved per window stats plots
 - guide sample specification elevated to proper command line option
 - format for the genotype file slightly changed (REF + ALT columns dropped, as they are not used in the analysis) --> keep that in mind when working with existing input data
-A copy of the previous version of the script is still available in ./legacy/windowed_pca_v1.py 
+A copy of the previous version of the script is still available in ```legacy/windowed_pca_v1.py``` 
 
 ## Overview
 - useful to explore the variation/divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
