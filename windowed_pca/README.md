@@ -7,10 +7,11 @@ This is an improved version of earlier versions. It has been tested extensively 
 The main improvements include:
 - instead of loading the entire genotype file into memory, only the current window is read, which should greatly reduce memory requirements (and potentially speed)
 - Support for local windowed PCA (regions can now be specified, e.g. chr1:1000000-8000000
-- VCF support added
-- plotting of per window stats was improved
-- format for the genotype file was slightly changed (REF + ALT columns dropped, as they are not used in the analysis) --> keep that in mind when working with existing input data
-- a copy of the previous version of the script is still in ./legacy/windowed_pca.v1.py 
+- VCF support
+- improved per window stats plots
+- guide sample specification elevated to proper command line option
+- format for the genotype file slightly changed (REF + ALT columns dropped, as they are not used in the analysis) --> keep that in mind when working with existing input data
+A copy of the previous version of the script is still available in ./legacy/windowed_pca_v1.py 
 
 ## Overview
 - useful to explore the variation/divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
@@ -49,39 +50,38 @@ ind_9   18X     species_2       uninverted
 ```
 
 ### Running windowed_pca.py
-The python script requires 13 positional arguments, which are explained in more detail below:
+The python script requires 12 positional arguments, which are explained in more detail below:
 
 ```
-python3 windowed_pca.py variant_file_path, metadata_path, output_prefix, region, w_size, w_step, pc, taxon, group, \
-        color_taxon, guide_samples
+python3 windowed_pca.py variant_file_path, metadata_path, output_prefix, region, w_size, w_step, pc, taxon, group, color_taxon, guide_samples
 ```
 
 | Argument | Type | Description |
 | ----------------------- | --- | -------------------------------- | 
-| **genotype file**   | str | path to the genotype file |
+| **variant file**   | str | path to uncompressed or gzipped variant file (VCF or genotype file) |
 | **metadata**          | str | path to the metadata file |
-| **output prefix**     | str | prefix that will be used for all output files ('test/' would create a new directory as the prefix and all output files would be located therein) |
-| **chromosome name**   | str | name of the chromosome, e.g. 'chr1' |
-| **chromosome length** | int | length of the chromosome in bp, e.g. '35000000' |
-| **window size**       | int | size of the sliding window in bp, e.g. '1000000' |
-| **window step** | int | step size of the sliding window in bp, e.g. '100000' |
-| **filter column name** | str | set a metadata column name to be used to select individuals to be included in the analysis e.g. 'species' (see filter column value for context) |
-| **filter column value** | str | select a value to be filtered for in the defined filter column. Setting **filter column name** to 'species' and **filter column value** to 'species_1' would include all individuals of the species 'species_1' in the output, and ignore all others. To include more than one value, specify a comma-separated list (e.g. 'species_1,species_2') |
-| **color column name** | str | select a metadata column that will serve to partition included individuals into color groups in the output plots. If selecting e.g. 'inversion_state', all individuals of the same inversion state (previously known and included in the metadata) will have the same color in the output plots. Specifying a comma-separated list of column names (e.g. 'species,inversion_state'), creates versions of each output plot that only differ in the color scheme |
-| **variance threshold** | int | relevant to correct random switching along PC axes, see code for details, if unsure, use "9" |
-| **mean threshold** | int | relevant to correct random switching along PC axes, see code for details, if unsure, use "3" |
-
+| **output prefix**     | str | prefix for output files |
+| **region**   | str | target region in format "chr:start-stop" (i.e. chr1:1-$chrom_length to analyze the entire chr1) |
+| **window size**       | int | sliding window size in bp, e.g. '1000000' |
+| **window step** | int | sliding window step size in bp, e.g. '100000' |
+| **pc** | int | principal component to use ('1' or '2') |
+| **filter column name** | str | metadata column name to filter for individuals to includede in the analysis, e.g. 'genus' (see <filter column value>) |
+| **filter column value** | str | value to be filtered for in filter column; Setting *filter column name* to 'genus' and *filter column value* to 'Homo' would include all individuals of the genus _Homo_ in the output, while ignoring all others. (a comma-separated list of include values is accepted, e.g. 'Homo,Pan') |
+| **color column name** | str | metadata column to assign colors by in the output plot; if selecting 'genus', all individuals from the same genus will have the same color in the output plots; if specifying a comma-separated list like 'genus,species', one output plot is generated for each color scheme |
+| **color column name** | str |[optional] list of samples to use for polarization, e.g. 'ind1,ind2,ind3' (details --> README)' |
+| **guide samples** | str | [optional] list of samples to use for polarization, e.g. "ind1,ind2,ind3"; set 'None' for automatic guide sample selection |
 
 #### Sample prompt 
 ```
-python3 windowed_pca.py $genotype_file test_dataset/input/metadata.tsv test_dataset/output/ chr1 35000000 1000000 10000 id $sample_ids inversion_state 9 3
+python3 code/windowed_pca.py test_dataset/input/sample_vcf.gz test_dataset/input/metadata.tsv test_dataset/output/testrun chr1:1-35000000 1000000 10000 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9 inversion_state ind_7,ind_8,ind_9
 ```
-- the described genotype file (```test_dataset/input/genotype_file.tsv.gz```) and metadata file (```test_dataset/input/metadata.tsv```) are used as input files <genotype 
+- the variant file (```test_dataset/input/sample_vcf.gz``` this could also be ```test_dataset/input/genotype_file.tsv.gz```) and metadata file (```test_dataset/input/metadata.tsv```) are used as input files <genotype 
 file> and <metadata>
 - ```test_dataset/output/``` is set as the <output prefix>, which tells the script to create a new output directory ```test_dataset/output/``` (if it doesn't exist), and to create all output files therein
-- 'chr1' and '35000000' are set for <chromosome name> and <chromosome length>
+- <region> to analyze here is the entire chromosome 1 (```chr1:1-35000000```), but could also be a sub set of the chromosome (e.g. ```chr1:1000000-8000000```)
 - <window size> is set to 1 Mbp ('1000000'), because the sample dataset is downsampled to 10% of the original SNPs, and a relatively large window size is required to have enough (>100) variants per window
-- <step size> is set to 100,000 bp ('100000'), resulting in overlapping windows.
+- <step size> is set to 100,000 bp ('100000'), resulting in overlapping windows
+- <pc> is set to 
 - <filter column name> is set to 'id' and <filter column value> to the previously defined $sample_ids variable to provide a list of samples to include (since \$sample_ids contains all samples in the metadata, all samples are included; to include e.g. only samples from species_1, set <filter column value> to 'species' and <filter column name> to 'species_1')
 - <color column name> is set to 'inversion_state', resulting in all individuals with the same inversion states having the same color in the output sliding window plot
 - <variance threshold> and <mean threshold> are set to the default values, for details see source code.
