@@ -72,7 +72,7 @@ def parse_arguments():
                                         "genus,species", one output plot is \n\
                                         generated for each color scheme\n\
             <guide samples>        str  list of samples to use forpolarization,\n\
-                                        e.g. "ind1,ind2,ind3"; specify 'None' for\n\
+                                        e.g. "ind1,ind2,ind3"; specify "None" for\n\
                                         automatic guide sample selection(details\n\
                                         --> README)',
         file=sys.stderr,
