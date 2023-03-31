@@ -6,69 +6,29 @@
 This is an improved version of earlier versions. It has been tested extensively and should produce identical results, but please let me know if you notice any issues
 The main improvements include:
 - instead of loading the entire genotype file into memory, only the current window is read, which should greatly reduce memory requirements (and potentially speed)
-- VCF support was added
+- Support for local windowed PCA (regions can now be specified, e.g. chr1:1000000-8000000
+- VCF support added
 - plotting of per window stats was improved
+- format for the genotype file was slightly changed (REF + ALT columns dropped, as they are not used in the analysis) --> keep that in mind when working with existing input data
+- a copy of the previous version of the script is still in ./legacy/windowed_pca.v1.py 
 
-
+## Overview
 - useful to explore the variation/divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
 - generates PDF and interactive HTML plots (using plotly)
-- input files: genotype file (easy to obtain from VCF) and a metadata file (details below)
+- input files: a biallelic VCF and a metadata file (details below) (instead of a VCF, a genotype file can be used as input; see below) 
 
-## Python dependencies
+## Python dependencies 
 - scikit-allel (https://anaconda.org/conda-forge/scikit-allel)
 - plotly (https://anaconda.org/plotly/plotly)
 - gzip (https://anaconda.org/conda-forge/gzip)
 - numpy (https://anaconda.org/anaconda/numpy)
 - pandas (https://anaconda.org/anaconda/pandas)
+--> easy to obtain using conda
 
 ## Usage
-
-The below instructions function as a tutorial (after cloning the repo and installing the dependencies).
+The below instructions function as a tutorial (after cloning the repo and getting the dependencies).
 ```test_data/``` contains a sample VCF file (```test_data/input/sample_vcf.gz```) and a corresponding metadata file (```test_data/input/metadata.tsv```). The instructions below 
 guide the user through all necessary steps from preparing a genotype file to running the ```windowed_pca.py``` script.
-
-### Preparing a genotype file from a VCF file (biallelic SNPs)
-Based on the provided minimal information sample VCF, generate a genotype file in the required format.
-Below is one possible way to obtain a genotype file based on a VCF, but any other approach that results in the same format works.
-Columns REF and ALT are not used by ```windowed_pca.py``` and can be replaced with dummy data.
-```
-# set $sample_vcf and $/genotype_file variables
-sample_vcf=test_dataset/input/sample.vcf.gz
-genotype_file=test_dataset/input/genotype_file.tsv.gz
-
-# define a list of samples to be included in the genotype file (samples must be subset of input VCF samples)
-sample_ids='ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9'
-
-# derive header for $genotype_file from $sample_vcf
-bcftools view -h $sample_vcf | awk '$1=="#CHROM"' | cut -f 1,2,10- | tr -d '#' | gzip -c > $genotype_file
-
-# convert VCF rows to $genotype_file rows 
-# - keep only lines without missing genotype calls
-# - keep only biallelic snps that passed all filters
-# - drop unnecessary VCF info (FORMAT, INFO columns)
-bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 
-'s|0/1|1|g' | sed 's|1/0|1|g' | gzip -c >> $genotype_file
-```
-Have a look at the first columns of the gentype file:
-```
-zcat ${genotype_file}.gz | head -n 15
-CHROM   POS     REF     ALT     ind_1   ind_2   ind_3   ind_4   ind_5   ind_6   ind_7   ind_8   ind_9
-chr1    10156   A       T       0       0       0       0       0       0       0       0       0
-chr1    12814   A       G       0       0       0       0       0       0       0       0       0
-chr1    12895   G       A       0       0       0       0       0       0       0       0       0
-chr1    12957   G       A       0       0       0       0       0       0       0       0       0
-chr1    55607   A       T       0       0       0       0       0       0       0       0       0
-chr1    55728   A       T       0       0       0       0       0       0       0       0       0
-chr1    55963   G       A       0       0       0       0       0       0       0       0       0
-chr1    56234   A       G       0       0       0       0       0       0       0       0       0
-chr1    56469   C       T       0       0       0       0       0       0       0       0       0
-chr1    56724   T       C       2       1       1       1       0       0       2       2       1
-chr1    56796   G       A       0       0       0       0       0       0       0       0       0
-chr1    57369   C       T       0       0       0       0       0       0       0       0       0
-chr1    57650   G       A       0       0       0       0       0       0       0       0       0
-chr1    57865   A       C       0       0       0       0       0       0       0       0       0
-```
-
 
 ### Preparing a metadata file
 A metadata file is required to provide annotation for the HTML plots, and can also be used to control which samples to include in the windowed PCA analysis, and to assign groups that will have the same color in the plots.
@@ -92,8 +52,8 @@ ind_9   18X     species_2       uninverted
 The python script requires 13 positional arguments, which are explained in more detail below:
 
 ```
-python3 windowed_pca.py <genotype file> <metadata> <output prefix> <chromosome name> <chromosome length> <window size> <window step size> <filter column name> <filter column 
-value> <color column name> <variance threshold> <mean threshold>
+python3 windowed_pca.py variant_file_path, metadata_path, output_prefix, region, w_size, w_step, pc, taxon, group, \
+        color_taxon, guide_samples
 ```
 
 | Argument | Type | Description |
@@ -127,23 +87,64 @@ file> and <metadata>
 - <variance threshold> and <mean threshold> are set to the default values, for details see source code.
 
 
+### Preparing a genotype file from a VCF file (biallelic SNPs)
+A genotype file like this can be much more space efficient than a full scale VCF. It contains only the chromosome name, position and per sample genotypes encoded as (0=hom ref, 1=het, 2=hom alt, -1=mising data).
+Based on the provided minimal information sample VCF, generate a genotype file in the required format.
+Below is one possible way to obtain a genotype file based on a VCF, but any other approach that results in the same format works.
+(A previous version included a REF and ALT column – these were not used by the script and have been dropped)
+```
+# set $sample_vcf and $/genotype_file variables
+sample_vcf=test_dataset/input/sample.vcf.gz
+genotype_file=test_dataset/input/genotype_file.tsv.gz
+
+# define a list of samples to be included in the genotype file (samples must be subset of input VCF samples)
+sample_ids='ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9'
+
+# derive header for $genotype_file from $sample_vcf
+bcftools view -h $sample_vcf | awk '$1=="#CHROM"' | cut -f 1,2,10- | tr -d '#' | gzip -c > $genotype_file
+
+# convert VCF rows to $genotype_file rows 
+# - keep only lines without missing genotype calls
+# - keep only biallelic snps that passed all filters
+# - drop unnecessary VCF info (FORMAT, INFO columns)
+bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 
+'s|0/1|1|g' | sed 's|1/0|1|g' | gzip -c >> $genotype_file
+```
+Have a look at the first columns of the gentype file:
+```
+zcat ${genotype_file}.gz | head -n 15
+CHROM   POS     ind_1   ind_2   ind_3   ind_4   ind_5   ind_6   ind_7   ind_8   ind_9
+chr1    10156   0       0       0       0       0       0       0       0       0
+chr1    12814   0       0       0       0       0       0       0       0       0
+chr1    12895   0       0       0       0       0       0       0       0       0
+chr1    12957   0       0       0       0       0       0       0       0       0
+chr1    55607   0       0       0       0       0       0       0       0       0
+chr1    55728   0       0       0       0       0       0       0       0       0
+chr1    55963   0       0       0       0       0       0       0       0       0
+chr1    56234   0       0       0       0       0       0       0       0       0
+chr1    56469   0       0       0       0       0       0       0       0       0
+chr1    56724   2       1       1       1       0       0       2       2       1
+chr1    56796   0       0       0       0       0       0       0       0       0
+chr1    57369   0       0       0       0       0       0       0       0       0
+chr1    57650   0       0       0       0       0       0       0       0       0
+chr1    57865   0       0       0       0       0       0       0       0       0
+```
+
 ### Output files
 Six output files are created by default, which can be grouped as follows:
 1. Windowed PCA:
-    1. ```${output_prefix}.${chromosome_name}.pc_1.tsv``` contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
-    2. ```${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.html```: interactive HTML plot of the windowed PCA results, based on ```${output_prefix}.${chromosome_name}.pc_1.tsv```. if more than one color_column_name was specified, additional versions of this plot will be produced.
-    3. ```${output_prefix}.${chromosome_name}.pc_1.${color_column_name}.pdf```: like the HTML file(s), just PDF(s)
+    1. ```${output_prefix}.w_pc_${pc}.tsv.gz``` contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
+    2. ```${output_prefix}.pc_${pc}.${color_column_name}.html```: interactive HTML plot of the windowed PCA results, based on ```${output_prefix}.${chromosome_name}.pc_1.tsv```. if more than one color_column_name was specified, additional versions of this plot will be produced.
+    3. ```${output_prefix}.pc_${pc}.${color_column_name}.pdf```: like the HTML file(s), just as PDF(s)
 2. Supplementary info:
-    1. ```${output_prefix}.${chromosome_name}.supplementary_info.tsv```: contains additional info on the PCA results per window: '% explained PC 1', '% explained PC 2', '% included sites'; all values are relative, '% included sites' is the percentage of included sites relative to the specified window size.
-    2. ```${output_prefix}.${chromosome_name}.supplementary_info.html```: interactive HTML plot of this additional info
-    3. ```${output_prefix}.${chromosome_name}.supplementary_info.pdf```: same as interactive HTML, just PDF
+    1. ```${output_prefix}.w_stats.tsv.gz```: contains per window stats on the PCA results per window: % explained PC 1, % explained PC 2, # of included sites per window.
+    2. ```${output_prefix}.w_stats.html```: interactive HTML plot of this per windows stats
+    3. ```${output_prefix}.w_stats.pdf```: same as interactive HTML, just PDF
 
 
 
 
 ### Notes:
-- WARNING: The entire genotype file is loaded into memory in the first step to speed up computation. This requires sufficient memory, depending on the size of the used callset.
-- genotype file: REF/ALT fields are not used, they can be populated with dummy data
 - Any biallelic variants can be used as lng as the are encoded as 0 (hom ref), 1 (het), 2 (hom alt). I have used InDels smaller 20 bp before and got nice results
 - All columns in metadata will be included in hover display in HTML plots
 - If output files (TSVs) from a previous run are detected (same output prefix), they will be reused for plitting instead of calculating new ones. This is useful to adjust the color scheme of the plots. To rerun everything from scratch, delete any existing output files.
