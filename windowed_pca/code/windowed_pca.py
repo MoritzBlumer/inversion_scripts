@@ -13,6 +13,11 @@ mean_threshold = 3  # if no guide samples specified, choose the n samples with l
 float_precision = 7 # float precision for text output
 
 
+## File info
+__author__ = 'Moritz Blumer, 2023'
+__version__ = '2.0'
+__email__ = 'lmb215@cam.ac.uk'
+
 
 ## Dependencies
 import sys, os
