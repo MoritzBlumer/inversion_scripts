@@ -97,7 +97,7 @@ def parse_arguments():
 
 def fetch_variant_file_samples(variant_file_path):
     '''
-    Fetch sample ids from variant file (used by metadata)
+    Fetch sample ids from variant file (used by read_metadata())
     '''
     read_func = gzip.open if variant_file_path.endswith('.gz') else open
     # vcf
