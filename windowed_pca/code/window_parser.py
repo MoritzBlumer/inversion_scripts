@@ -54,11 +54,13 @@ def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_s
             line = line.strip().split('\t')
             q_chrom = line[0]
             pos = int(line[1])
-            gts = [line[2:][idx] for idx in sample_idx_lst]
-
+            
             # skip other than the specified chromosome
             if q_chrom != chrom: continue
-
+            
+            # fetch genotypes
+            gts = [line[2:][idx] for idx in sample_idx_lst]
+            
             # skip monomorphic sites if specified
             if skip_monomorphic and len(set(gts)) == 1: continue
 
@@ -172,7 +174,6 @@ def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, fun
             q_chrom = line[0]
             pos = int(line[1])
             filter = line[6]
-            gts = [line[9:][idx].split(':')[0] for idx in sample_idx_lst]
 
             # skip other than the specified chromosome
             if q_chrom != chrom: continue
@@ -180,10 +181,12 @@ def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, fun
             # keep only PASS sites
             if filter != 'PASS': continue
 
+            # fetch genotypes
+            gts = [line[9:][idx].split(':')[0] for idx in sample_idx_lst]
+            gts = [gt_code_dct[x] for x in gts]
+            
             # skip monomorphic sites if specified
             if skip_monomorphic and len(set(gts)) == 1: continue            
-
-            gts = [gt_code_dct[x] for x in gts]
 
             # case: pos exceeds current window
             while w_stop < pos:
