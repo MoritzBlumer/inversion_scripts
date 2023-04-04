@@ -42,9 +42,7 @@ def polarize(w_pca_df, mean_threshold, guide_samples):
     more comparable between chromosomes)
     '''
 
-    # remove the 60% most variable samples from the dataset (keep 40% to not only keep the ones 
-    # around 0) --> keep 40%
-    var_threshold = round(len(w_pca_df)*0.4)
+
 
     # if guide_samples not manually specified, select the var_threshold samples with the least 
     # variance, and from those the mean_threshold samples with the highest absolute value accross 
@@ -52,6 +50,9 @@ def polarize(w_pca_df, mean_threshold, guide_samples):
     if guide_samples:
         guide_samples = guide_samples.split(',')
     else:
+        var_threshold = round(len(w_pca_df)*0.4) # remove the 60% most variable samples from the 
+                                                 # dataset (keep 40% to not only keep the ones 
+                                                 # around 0) --> keep 40%
         guide_samples_df = w_pca_df.loc[w_pca_df.dropna(axis=1).abs().var(axis=1).sort_values()\
                                         .index[0:var_threshold]]
         guide_samples = guide_samples_df.dropna(axis=1).abs().sum(axis=1).sort_values()\
