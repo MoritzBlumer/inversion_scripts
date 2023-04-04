@@ -302,7 +302,7 @@ def main():
         w_pca_df = polarize(
             w_pca_df,
             mean_threshold=mean_threshold,
-            guide_samples=False,
+            guide_samples=guide_samples,
         )
 
         # save output data before annotation if not already present
