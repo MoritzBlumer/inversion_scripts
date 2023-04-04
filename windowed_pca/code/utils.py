@@ -9,7 +9,7 @@ import plotly, plotly.express as px
 
 def read_metadata(metadata_path, variant_file_sample_lst, taxon=None, group=None):
     '''
-    Read in metadata, optionally filter by taxon ?and sort by gt_file sample order?
+    Read in metadata, optionally filter by taxon and sort by gt_file sample order?
     '''
 
     # read in metadata
