@@ -351,7 +351,7 @@ def main():
         # plot & save
         w_pca_fig = plot_w_pca(
             w_pca_anno_df,
-            1,
+            pc,
             c_taxon,
             chrom, start, stop,
             w_size, w_step,
