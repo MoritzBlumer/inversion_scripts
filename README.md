@@ -25,7 +25,6 @@ _Conduct PCAs in in genomic windows (using scikit-allel)_
 - generates PDF and interactive HTML plots (using plotly)
 - input files: a biallelic VCF and a metadata file (details below) (instead of a VCF, a genotype file can be used as input; see below) 
 
-<br />
 
 ## **Dependencies**
 - scikit-allel (https://anaconda.org/conda-forge/scikit-allel)
