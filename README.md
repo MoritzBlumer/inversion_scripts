@@ -24,6 +24,8 @@ For questions/problems: lmb215@cam.ac.uk
 - generates PDF and interactive HTML plots (using plotly)
 - input files: a biallelic VCF and a metadata file (details below) (instead of a VCF, a genotype file can be used as input; see below) 
 
+<br />
+
 ### **Dependencies**
 - scikit-allel (https://anaconda.org/conda-forge/scikit-allel)
 - plotly (https://anaconda.org/plotly/plotly)
@@ -33,8 +35,21 @@ For questions/problems: lmb215@cam.ac.uk
 - numba (https://anaconda.org/anaconda/numba)
 --> easy to obtain using conda
 
+<br />
+
 ### **Usage**
 
+<br />
+
+```
+python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size> <window step> 
+<minor allel frequency> <pc> <filter column name> <filter column value> <color column name> <guide samples>
+```
+<br />
+
+### **Command line arguments**
+
+<br />
 
 | Argument | Type | Description |
 | ----------------------- | --- | -------------------------------- | 
@@ -51,37 +66,29 @@ For questions/problems: lmb215@cam.ac.uk
 | **color column name** | str | metadata column to assign colors by in the output plot; if selecting 'genus', all individuals from the same genus will have the same color in the output plots; if specifying a comma-separated list like 'genus,species', one output plot is generated for each color scheme |
 | **guide samples** | str | list of samples to use for polarization, e.g. 'ind1,ind2,ind3'; specify 'None' for automatic guide sample selection |
 
+<br />
 
+### **Example command line**
 
+<br />
 
-The below instructions function as a tutorial (after cloning the repo and getting the dependencies).
-```test_data/``` contains a sample VCF file (```test_data/input/sample_vcf.gz```) and a corresponding metadata file (```test_data/input/metadata.tsv```). The instructions below 
-guide the user through all necessary steps from preparing a genotype file to running the ```windowed_pca.py``` script.
-
-
-
-### Running windowed_pca.py
-The python script requires 12 positional arguments, which are explained in more detail below:
-
-```
-python3 code/windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size>, <window step>, 
-<minor allel frequency>, <pc>, <filter column name>, <filter column value> <color column name> <guide samples>
-```
-
-#### Sample prompt 
 ```
 python3 code/windowed_pca.py test_dataset/input/sample_vcf.gz test_dataset/input/metadata.tsv test_dataset/output/testrun chr1:1-35000000 1000000 10000 None 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9 inversion_state ind_7,ind_8,ind_9
 ```
-- the variant file (```test_dataset/input/sample_vcf.gz``` this could also be ```test_dataset/input/genotype_file.tsv.gz```) and metadata file (```test_dataset/input/metadata.tsv```) are used as input files <genotype 
-file> and <metadata>
-- ```test_dataset/output/``` is set as the <output prefix>, which tells the script to create a new output directory ```test_dataset/output/``` (if it doesn't exist), and to create all output files therein
-- <region> to analyze here is the entire chromosome 1 ('chr1:1-35000000'), but could also be a sub set of the chromosome (e.g. 'chr1:1000000-8000000')
-- <window size> is set to 1 Mbp ('1000000'), because the sample dataset is downsampled to 10% of the original SNPs, and a relatively large window size is required to have enough (>100) variants per window
-- <step size> is set to 100,000 bp ('100000'), resulting in overlapping windows
-- <pc> is set to '1' to analyze principal component 1 (the other option would be '2' for PC 2)
-- <filter column name> is set to the metadata column 'id' and <filter column value> to the a list of sample ids to include; to include e.g. only samples from species_1, set <filter column value> to 'species' and <filter column name> to 'species_1')
-- <color column name> is set to 'inversion_state', resulting in all individuals with the same inversion states having the same color in the output w_pc_1 plot
-- <guide samples> is set to 'ind_7,ind_8,ind_9' to use these specific samples for polarization of the PC axis for plotting
+
+<br />
+
+### **Output files**
+Six output files are created by default, which can be grouped as follows:
+1. Windowed PCA:
+    1. ```${output_prefix}.w_pc_${pc}.tsv.gz``` contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
+    2. ```${output_prefix}.pc_${pc}.${color_column_name}.html```: interactive HTML plot of the windowed PCA results, based on ```${output_prefix}.${chromosome_name}.pc_1.tsv```. if more than one color_column_name was specified, additional versions of this plot will be produced.
+    3. ```${output_prefix}.pc_${pc}.${color_column_name}.pdf```: like the HTML file(s), just as PDF(s)
+2. Supplementary info:
+    1. ```${output_prefix}.w_stats.tsv.gz```: contains per window stats on the PCA results per window: % explained PC 1, % explained PC 2, # of included sites per window.
+    2. ```${output_prefix}.w_stats.html```: interactive HTML plot of this per windows stats
+    3. ```${output_prefix}.w_stats.pdf```: same as interactive HTML, just PDF
+
 
 ### **PLEASE NOTE:**
 This is an improved version of earlier scripts. It has been tested extensively and should produce 
@@ -108,16 +115,6 @@ A copy of the previous version of the script is still available in ```legacy/win
 
 
 
-### Output files
-Six output files are created by default, which can be grouped as follows:
-1. Windowed PCA:
-    1. ```${output_prefix}.w_pc_${pc}.tsv.gz``` contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
-    2. ```${output_prefix}.pc_${pc}.${color_column_name}.html```: interactive HTML plot of the windowed PCA results, based on ```${output_prefix}.${chromosome_name}.pc_1.tsv```. if more than one color_column_name was specified, additional versions of this plot will be produced.
-    3. ```${output_prefix}.pc_${pc}.${color_column_name}.pdf```: like the HTML file(s), just as PDF(s)
-2. Supplementary info:
-    1. ```${output_prefix}.w_stats.tsv.gz```: contains per window stats on the PCA results per window: % explained PC 1, % explained PC 2, # of included sites per window.
-    2. ```${output_prefix}.w_stats.html```: interactive HTML plot of this per windows stats
-    3. ```${output_prefix}.w_stats.pdf```: same as interactive HTML, just PDF
 
 
 
