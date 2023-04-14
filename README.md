@@ -1,10 +1,10 @@
 # **About**
 
-This is becoming a collection of scripts to investigate genetic structure along the genome.
+*This is becoming a collection of scripts to investigate genetic structure along the genome.*
 
-If you find any of this useful and use it for your work, please consider citing this github.
+*If you find any of this useful and use it for your work, please consider citing this github.*
 
-For questions/problems: lmb215@cam.ac.uk
+*For questions/problems: lmb215@cam.ac.uk*
 
 
 <br />
@@ -45,6 +45,11 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wind
 ```
 
 *Help message*
+<style scoped>
+table {
+  font-size: 13px;
+}
+</style>
 
 | Argument | Type | Description |
 | ----------------------- | --- | -------------------------------- | 
