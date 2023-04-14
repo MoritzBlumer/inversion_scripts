@@ -19,12 +19,12 @@ For questions/problems: lmb215@cam.ac.uk
 ![example_plot](.media/windowed_pca.png)
 
 
-## Overview
+### **Overview**
 - useful to explore the variation/divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
 - generates PDF and interactive HTML plots (using plotly)
 - input files: a biallelic VCF and a metadata file (details below) (instead of a VCF, a genotype file can be used as input; see below) 
 
-## Dependencies 
+### **Dependencies**
 - scikit-allel (https://anaconda.org/conda-forge/scikit-allel)
 - plotly (https://anaconda.org/plotly/plotly)
 - gzip (https://anaconda.org/conda-forge/gzip)
@@ -33,20 +33,8 @@ For questions/problems: lmb215@cam.ac.uk
 - numba (https://anaconda.org/anaconda/numba)
 --> easy to obtain using conda
 
-## Usage
-The below instructions function as a tutorial (after cloning the repo and getting the dependencies).
-```test_data/``` contains a sample VCF file (```test_data/input/sample_vcf.gz```) and a corresponding metadata file (```test_data/input/metadata.tsv```). The instructions below 
-guide the user through all necessary steps from preparing a genotype file to running the ```windowed_pca.py``` script.
+### **Usage**
 
-
-
-### Running windowed_pca.py
-The python script requires 12 positional arguments, which are explained in more detail below:
-
-```
-python3 code/windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size>, <window step>, 
-<minor allel frequency>, <pc>, <filter column name>, <filter column value> <color column name> <guide samples>
-```
 
 | Argument | Type | Description |
 | ----------------------- | --- | -------------------------------- | 
@@ -62,6 +50,23 @@ python3 code/windowed_pca.py <variant file> <metadata> <output prefix> <region> 
 | **filter column value** | str | value to be filtered for in filter column; Setting *filter column name* to 'genus' and *filter column value* to 'Homo' would include all individuals of the genus _Homo_ in the output, while ignoring all others. (a comma-separated list of include values is accepted, e.g. 'Homo,Pan') |
 | **color column name** | str | metadata column to assign colors by in the output plot; if selecting 'genus', all individuals from the same genus will have the same color in the output plots; if specifying a comma-separated list like 'genus,species', one output plot is generated for each color scheme |
 | **guide samples** | str | list of samples to use for polarization, e.g. 'ind1,ind2,ind3'; specify 'None' for automatic guide sample selection |
+
+
+
+
+The below instructions function as a tutorial (after cloning the repo and getting the dependencies).
+```test_data/``` contains a sample VCF file (```test_data/input/sample_vcf.gz```) and a corresponding metadata file (```test_data/input/metadata.tsv```). The instructions below 
+guide the user through all necessary steps from preparing a genotype file to running the ```windowed_pca.py``` script.
+
+
+
+### Running windowed_pca.py
+The python script requires 12 positional arguments, which are explained in more detail below:
+
+```
+python3 code/windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size>, <window step>, 
+<minor allel frequency>, <pc>, <filter column name>, <filter column value> <color column name> <guide samples>
+```
 
 #### Sample prompt 
 ```
@@ -125,7 +130,7 @@ Six output files are created by default, which can be grouped as follows:
 # **Input Files**
 
 
-### Preparing a metadata file
+## **Preparing a metadata file**
 A metadata file is required to provide annotation for the HTML plots, and can also be used to control which samples to include in the windowed PCA analysis, and to assign groups that will have the same color in the plots.
 The minimum requirement for the metadata file is that the first column contains unique identifiers for each sample, and is called 'id'. All additional fields are optional.
 An example metadata file, which in addition to the id contains info on sequencing coverage, species and inversion state of each sample, is provided:
@@ -143,8 +148,8 @@ ind_8   26X     species_2       uninverted
 ind_9   18X     species_2       uninverted
 ```
 
-### Preparing a genotype file from a VCF file (biallelic SNPs)
-A genotype file like this can be much more space efficient than a full scale VCF. It contains only the chromosome name, position and per sample genotypes encoded as (0=hom ref, 1=het, 2=hom alt, -1=mising data).
+## **Preparing a genotype file from a VCF file (biallelic SNPs)**
+A file storing only genotypes can be much more space efficient than a full scale VCF. It contains only the chromosome name, position and per sample genotypes encoded as (0=hom ref, 1=het, 2=hom alt, -1=mising data).
 Based on the provided minimal information sample VCF, generate a genotype file in the required format.
 Below is one possible way to obtain a genotype file based on a VCF, but any other approach that results in the same format works.
 (A previous version included a REF and ALT column – these were not used by the script and have been dropped)
