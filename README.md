@@ -45,11 +45,7 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wind
 ```
 
 *Help message*
-<style scoped>
-table {
-  font-size: 13px;
-}
-</style>
+<sub><sup>
 
 | Argument | Type | Description |
 | ----------------------- | --- | -------------------------------- | 
@@ -65,7 +61,7 @@ table {
 | **filter column value** | str | value to be filtered for in filter column; Setting *filter column name* to 'genus' and *filter column value* to 'Homo' would include all individuals of the genus _Homo_ in the output, while ignoring all others. (a comma-separated list of include values is accepted, e.g. 'Homo,Pan') |
 | **color column name** | str | metadata column to assign colors by in the output plot; if selecting 'genus', all individuals from the same genus will have the same color in the output plots; if specifying a comma-separated list like 'genus,species', one output plot is generated for each color scheme |
 | **guide samples** | str | list of samples to use for polarization, e.g. 'ind1,ind2,ind3'; specify 'None' for automatic guide sample selection |
-
+</sup></sub>
 <br />
 
 ## **Example command line:**
