@@ -41,13 +41,11 @@ _Conduct PCAs in in genomic windows (using scikit-allel)_
 
 *Please refer to the Input Files section below to for file format specifiections.*
 
-<br />
-
 ```
 python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size> <window step> <minor allel frequency> <pc> <filter column name> <filter column value> <color column name> <guide samples>
 ```
 
-<br />
+*Help message*
 
 | Argument | Type | Description |
 | ----------------------- | --- | -------------------------------- | 
@@ -73,7 +71,6 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wind
 python3 code/windowed_pca.py test_dataset/input/sample_vcf.gz test_dataset/input/metadata.tsv test_dataset/output/testrun chr1:1-35000000 1000000 10000 None 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9 inversion_state ind_7,ind_8,ind_9
 ```
 
-<br />
 
 *This generates six output file:s*
 
@@ -87,7 +84,6 @@ python3 code/windowed_pca.py test_dataset/input/sample_vcf.gz test_dataset/input
     2. ```${output_prefix}.w_stats.html```: interactive HTML plot of this per windows stats
     3. ```${output_prefix}.w_stats.pdf```: same as interactive HTML, just PDF
 
-<br />
 
 ### **Please note:**
 This is an improved version of earlier scripts. It has been tested extensively and should produce 
@@ -103,7 +99,6 @@ should greatly reduce memory requirements (and potentially speed)
 - format for the genotype file slightly changed (REF + ALT columns dropped, as they are not used in the analysis) --> keep that in mind when working with existing input data
 A copy of the previous version of the script is still available in ```legacy/windowed_pca_v1.py``` 
 
-
 Additional comments:
 - all columns in metadata will be included in hover display in HTML plots
 - if output files (TSVs) from a previous run are detected (same output prefix), they will be reused for plotting instead of generating new ones
@@ -111,10 +106,6 @@ Additional comments:
 - in principal, any type of biallelic variants can be used as long as they are encoded as 0 (hom ref), 1 (het), 2 (hom alt), e.g. InDels ≤20 bp instead of SNPs
 - a major challenge for windowed PCAs is that the PCA in each window is conducted independently, and rotation is random (--> noisy plots). The script implements a correction step that aims at polarizing the orientation based on variance and mean of the previous window, using a subset of 'guide samples'. Thne automatic guide sample selection is not always ideal. Therefore, after the first round of plotting, suited samples can often be visually determined (i.e. samples that never cross y=0). A single guide sample can be sufficient for correct polarization.
 **********
-
-
-
-
 
 
 
