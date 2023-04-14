@@ -25,8 +25,9 @@ import numpy as np
 import pandas as pd
 import allel
 import gzip
+from numba import njit
 
-
+min_maf = 0.05
 
 ## Private functions
 
@@ -36,11 +37,11 @@ def parse_arguments():
     '''
 
     global variant_file_path, metadata_path, output_prefix, chrom, start, stop, w_size, w_step, \
-        pc, taxon, group, color_taxon, guide_samples
+        min_maf, pc, taxon, group, color_taxon, guide_samples
 
     # fetch arguments    
-    _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, pc, taxon, group, \
-        color_taxon, guide_samples = sys.argv
+    _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, min_maf, pc, \
+        taxon, group, color_taxon, guide_samples = sys.argv
 
     # print help message if incorrect number of arguments was specified
     if len(sys.argv) < 12:
@@ -49,37 +50,39 @@ def parse_arguments():
                                 <window size> <window step size> <pc> <filter column name>\n\
                                 <filter column value> <color column name>\n\
                                 <guide samples>\n\n\
-            <variant file>         str  path to uncompressed or gzipped variant file\n\
-                                        (VCF or genotype file; details -> README)\n\
-            <metadata>             str  path to the metadata file (details -> README)\n\
-            <output prefix>        str  prefix for output files\n\
-            <region>               int  target region in format "chr:start-stop"\n\
-                                        (i.e. chr1:1-chrom_length to analyze the\n\
-                                        entire chr1)\n\
-            <window size>          int  sliding window size in bp, e.g. "1000000"\n\
-            <window step>          int  sliding window step size in bp, e.g. "10000"\n\
-            <pc>                   int  principal component to use ("1" or "2")\n\
-            <filter column name>   str  metadata column name to filter for\n\
-                                        individuals to includede in the analysis,\n\
-                                        e.g. "genus" (see <filter column value>)\n\
-            <filter column value>  str  value to be filtered for in filter column;\n\
-                                        Setting <filter column name> to "genus" and\n\
-                                        <filter column value> to "Homo" would\n\
-                                        include all individuals of the genus Homo\n\
-                                        in the output, while ignoring all others.\n\
-                                        (a comma-separated list of include values\n\
-                                        can be provided, e.g. "Homo,Pan")\n\
-            <color column name>    str  metadata column to assign colors by in the\n\
-                                        output plot; if selecting "genus", all\n\
-                                        individuals from the same genus will have\n\
-                                        the same color in the output plots; if\n\
-                                        specifying a comma-separated list like \n\
-                                        "genus,species", one output plot is \n\
-                                        generated for each color scheme\n\
-            <guide samples>        str  list of samples to use forpolarization,\n\
-                                        e.g. "ind1,ind2,ind3"; specify "None" for\n\
-                                        automatic guide sample selection(details\n\
-                                        --> README)',
+            <variant file>           str    path to uncompressed or gzipped variant file\n\
+                                            (VCF or genotype file; details -> README)\n\
+            <metadata>               str    path to the metadata file (details -> README)\n\
+            <output prefix>          str    prefix for output files\n\
+            <region>                 int    target region in format "chr:start-stop"\n\
+                                            (i.e. chr1:1-chrom_length to analyze the\n\
+                                            entire chr1)\n\
+            <window size>            int    sliding window size in bp, e.g. "1000000"\n\
+            <window step>            int    sliding window step size in bp, e.g. "10000"\n\
+            <minor allel frequency>  float  minor allel frequency threshold; specify\n\
+                                            "None" to disable filter \n\
+            <pc>                     int    principal component to use ("1" or "2")\n\
+            <filter column name>     str    metadata column name to filter for\n\
+                                            individuals to includede in the analysis,\n\
+                                            e.g. "genus" (see <filter column value>)\n\
+            <filter column value>    str    value to be filtered for in filter column;\n\
+                                            Setting <filter column name> to "genus" and\n\
+                                            <filter column value> to "Homo" would\n\
+                                            include all individuals of the genus Homo\n\
+                                            in the output, while ignoring all others.\n\
+                                            (a comma-separated list of include values\n\
+                                            can be provided, e.g. "Homo,Pan")\n\
+            <color column name>      str    metadata column to assign colors by in the\n\
+                                            output plot; if selecting "genus", all\n\
+                                            individuals from the same genus will have\n\
+                                            the same color in the output plots; if\n\
+                                            specifying a comma-separated list like \n\
+                                            "genus,species", one output plot is \n\
+                                            generated for each color scheme\n\
+            <guide samples>          str    list of samples to use forpolarization,\n\
+                                            e.g. "ind1,ind2,ind3"; specify "None" for\n\
+                                            automatic guide sample selection(details\n\
+                                            --> README)',
         file=sys.stderr,
         )
 
@@ -90,7 +93,10 @@ def parse_arguments():
 
     # change str to int where appropriate
     start, stop, w_size, w_step, pc = int(start), int(stop), int(w_size), int(w_step), int(pc)
-    
+
+    # change min_maf to float if specified
+    min_maf = float(min_maf) if not 'None' else None
+
     # change output_prefix to lower case
     output_prefix = output_prefix.lower()
 
@@ -99,13 +105,16 @@ def fetch_variant_file_samples(variant_file_path):
     '''
     Fetch sample ids from variant file (used by read_metadata())
     '''
+
     read_func = gzip.open if variant_file_path.endswith('.gz') else open
+    
     # vcf
     if variant_file_path.endswith('.vcf') or variant_file_path.endswith('.vcf.gz'):
         with read_func(variant_file_path, 'rt') as vcf:
             for line in vcf:
                 if line.startswith('#CHROM'):
                     variant_file_sample_lst = line.strip().split('\t')[9:]
+
     # genotype file
     elif variant_file_path.endswith('.tsv') or variant_file_path.endswith('.tsv.gz'):
         with read_func(variant_file_path, 'rt') as gt_file:
@@ -114,10 +123,34 @@ def fetch_variant_file_samples(variant_file_path):
     return variant_file_sample_lst
 
 
+@njit()
+def min_maf_filter(gt_arr, min_maf):
+    '''
+    Drop SNPs with minor allele frequency below specified value
+    '''
+
+    # allele count
+    n_alleles = 2 * gt_arr.shape[1]
+
+    # calculate allel frequencies and multiple with -1 if AF > 0.05 (because input data may not be 
+    # polarized by major/minor allel)
+    afs = np.sum(gt_arr, axis=1) / n_alleles
+    afs[afs > 0.5] = 1 - afs[afs > 0.5]
+    
+    # keep only sites where AF >= min_maf
+    gt_arr = gt_arr[afs >= min_maf]
+
+    return gt_arr
+
+
 def pca(win, w_start, w_size):
     '''
     Conduct PCA, but if (n_variants < min_var_per_w) generate empty/dummy output instead
     '''
+
+    # apply minor allel frequency filter if specified
+    if min_maf:
+        gt_arr = min_maf_filter(gt_arr, min_maf)
 
     # trim off pos info
     win = [x[1:] for x in win]

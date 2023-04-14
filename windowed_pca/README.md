@@ -53,7 +53,7 @@ ind_9   18X     species_2       uninverted
 The python script requires 12 positional arguments, which are explained in more detail below:
 
 ```
-python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <winow size>, <window step>, <pc>, <filter column name>, <filter column value> <color column name> <guide samples>
+python3 code/windowed_pca.py <variant file> <metadata> <output prefix> <region> <winow size>, <window step>, <pc>, <filter column name>, <filter column value> <color column name> <minor allel frequency> <guide samples>
 ```
 
 | Argument | Type | Description |
@@ -64,6 +64,7 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wino
 | **region**   | str | target region in format "chr:start-stop" (i.e. chr1:1-$chrom_length to analyze the entire chr1) |
 | **window size**       | int | sliding window size in bp, e.g. '1000000' |
 | **window step** | int | sliding window step size in bp, e.g. '100000' |
+| **minor allel frequency** | float | minor allel frequency threshold; specify "None" to disable filter |
 | **pc** | int | principal component to use ('1' or '2') |
 | **filter column name** | str | metadata column name to filter for individuals to includede in the analysis, e.g. 'genus' (see <filter column value>) |
 | **filter column value** | str | value to be filtered for in filter column; Setting *filter column name* to 'genus' and *filter column value* to 'Homo' would include all individuals of the genus _Homo_ in the output, while ignoring all others. (a comma-separated list of include values is accepted, e.g. 'Homo,Pan') |
@@ -72,7 +73,7 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wino
 
 #### Sample prompt 
 ```
-python3 code/windowed_pca.py test_dataset/input/sample_vcf.gz test_dataset/input/metadata.tsv test_dataset/output/testrun chr1:1-35000000 1000000 10000 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9 inversion_state ind_7,ind_8,ind_9
+python3 code/windowed_pca.py test_dataset/input/sample_vcf.gz test_dataset/input/metadata.tsv test_dataset/output/testrun chr1:1-35000000 1000000 10000 None 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9 inversion_state ind_7,ind_8,ind_9
 ```
 - the variant file (```test_dataset/input/sample_vcf.gz``` this could also be ```test_dataset/input/genotype_file.tsv.gz```) and metadata file (```test_dataset/input/metadata.tsv```) are used as input files <genotype 
 file> and <metadata>
