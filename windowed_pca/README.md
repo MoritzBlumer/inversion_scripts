@@ -53,7 +53,8 @@ ind_9   18X     species_2       uninverted
 The python script requires 12 positional arguments, which are explained in more detail below:
 
 ```
-python3 code/windowed_pca.py <variant file> <metadata> <output prefix> <region> <winow size>, <window step>, <pc>, <filter column name>, <filter column value> <color column name> <minor allel frequency> <guide samples>
+python3 code/windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size>, <window step>, 
+<minor allel frequency>, <pc>, <filter column name>, <filter column value> <color column name> <guide samples>
 ```
 
 | Argument | Type | Description |
