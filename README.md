@@ -68,7 +68,7 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wind
 
 *Usage example based on the supplied test dataset:*
 ```
-python3 windowed_pca.py test_dataset/input/sample_vcf.gz test_dataset/input/metadata.tsv test_dataset/output/testrun chr1:1-35000000 1000000 10000 None 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9 inversion_state ind_7,ind_8,ind_9
+python3 windowed_pca.py test_dataset/input/sample.vcf.gz test_dataset/input/metadata.tsv test_dataset/output/testrun chr1:1-35000000 1000000 10000 None 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9 inversion_state ind_7,ind_8,ind_9
 ```
 
 
