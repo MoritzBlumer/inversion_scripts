@@ -13,7 +13,7 @@ For questions/problems: lmb215@cam.ac.uk
 <br />
 
 # **windowed_pca.py**
-### *Conduct PCAs in in genomic windows (using scikit-allel)*
+### _Conduct PCAs in in genomic windows (using scikit-allel)_
 <br />
 
 ![example_plot](.media/windowed_pca.png)
