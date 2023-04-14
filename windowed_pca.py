@@ -23,8 +23,8 @@ __email__ = 'lmb215@cam.ac.uk'
 import sys, os
 import numpy as np
 import pandas as pd
-import allel
 import gzip
+import allel
 from numba import njit
 
 min_maf = 0.05
@@ -44,7 +44,7 @@ def parse_arguments():
         taxon, group, color_taxon, guide_samples = sys.argv
 
     # print help message if incorrect number of arguments was specified
-    if len(sys.argv) < 12:
+    if len(sys.argv) < 13:
         print(
             '   python windowed_pca.py <variant file> <metadata> <output prefix> <region>\n\
                                 <window size> <window step size> <pc> <filter column name>\n\
@@ -216,7 +216,7 @@ def windowed_pca(variant_file_path, chrom, start, stop, metadata_df, w_size, w_s
 
     # conduct windowed PCA using window_parser() function
     if variant_file_path.endswith('.vcf') or variant_file_path.endswith('.vcf.gz'):
-        from window_parser import win_vcf
+        from modules.window_parser import win_vcf
         win_vcf(
             variant_file_path,
             chrom, start, stop,
@@ -227,7 +227,7 @@ def windowed_pca(variant_file_path, chrom, start, stop, metadata_df, w_size, w_s
         )
 
     elif variant_file_path.endswith('.tsv') or variant_file_path.endswith('.tsv.gz'):
-        from window_parser import win_gt_file
+        from modules.window_parser import win_gt_file
         win_gt_file(
             variant_file_path,
             chrom, start, stop,
@@ -279,7 +279,7 @@ def main():
     variant_file_sample_lst = fetch_variant_file_samples(variant_file_path)
 
     # read metadata
-    from utils import read_metadata
+    from modules.utils import read_metadata
     metadata_df = read_metadata(
         metadata_path,
         variant_file_sample_lst,
@@ -331,7 +331,7 @@ def main():
         )
 
         # polarize windowed PCA output
-        from utils import polarize
+        from modules.utils import polarize
         w_pca_df = polarize(
             w_pca_df,
             mean_threshold=mean_threshold,
@@ -359,7 +359,7 @@ def main():
         )
 
     # pivot windowed pca output and annotate with metadata
-    from utils import annotate
+    from modules.utils import annotate
     w_pca_anno_df = annotate(
         w_pca_df,
         metadata_df,
@@ -374,7 +374,7 @@ def main():
             '\n[INFO] Generating output HTMLs & PDFs',
             file=sys.stderr, flush=True,
     )
-    from utils import plot_w_pca
+    from modules.utils import plot_w_pca
     for c_taxon in color_taxon.split(','): 
 
         # compile output paths
@@ -401,7 +401,7 @@ def main():
     del w_pca_fig
 
     # plot window stats & save
-    from utils import plot_w_stats
+    from modules.utils import plot_w_stats
     w_stats_fig = plot_w_stats(
         w_stats_df,
         chrom, start, stop,
