@@ -35,7 +35,6 @@ _Conduct PCAs in in genomic windows (using scikit-allel)_
 - numba (https://anaconda.org/anaconda/numba)
 --> easy to obtain using conda
 
-<br />
 
 ## **Usage**
 
@@ -85,7 +84,7 @@ python3 code/windowed_pca.py test_dataset/input/sample_vcf.gz test_dataset/input
     3. ```${output_prefix}.w_stats.pdf```: same as interactive HTML, just PDF
 
 
-### **Please note:**
+## **Please note:**
 This is an improved version of earlier scripts. It has been tested extensively and should produce 
 identical results, but please let me know if you notice any issues.
 
@@ -105,7 +104,6 @@ Additional comments:
 - the threshold for the minimum number of SNPs per window is set to 25 and can be adjusted in the the main script
 - in principal, any type of biallelic variants can be used as long as they are encoded as 0 (hom ref), 1 (het), 2 (hom alt), e.g. InDels ≤20 bp instead of SNPs
 - a major challenge for windowed PCAs is that the PCA in each window is conducted independently, and rotation is random (--> noisy plots). The script implements a correction step that aims at polarizing the orientation based on variance and mean of the previous window, using a subset of 'guide samples'. Thne automatic guide sample selection is not always ideal. Therefore, after the first round of plotting, suited samples can often be visually determined (i.e. samples that never cross y=0). A single guide sample can be sufficient for correct polarization.
-**********
 
 
 
@@ -159,7 +157,7 @@ bcftools view -h $sample_vcf | awk '$1=="#CHROM"' | cut -f 1,2,10- | tr -d '#' |
 bcftools view -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS $sample_vcf | bcftools query -f '%CHROM\t%POS\t[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 
 's|0/1|1|g' | sed 's|1/0|1|g' | gzip -c >> $genotype_file
 ```
-Have a look at the first columns of the gentype file:
+Have a look at the first columns of the genotype file:
 ```
 zcat ${genotype_file}.gz | head -n 15
 CHROM   POS     ind_1   ind_2   ind_3   ind_4   ind_5   ind_6   ind_7   ind_8   ind_9
