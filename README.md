@@ -1,3 +1,5 @@
+**********
+
 # **About**
 
 This is becoming a collection of scripts to investigate genetic structure along the genome.
@@ -11,24 +13,25 @@ For questions/problems: lmb215@cam.ac.uk
 
 <br />
 <br />
-___
+
+**********
 
 # **windowed_pca.py**
-### _Conduct PCAs in in genomic windows (using scikit-allel)_
+## _Conduct PCAs in in genomic windows (using scikit-allel)_
 
 <br />
 
 ![example_plot](.media/windowed_pca.png)
 
 
-### **Overview**
+## **Overview**
 - useful to explore the variation/divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
 - generates PDF and interactive HTML plots (using plotly)
 - input files: a biallelic VCF and a metadata file (details below) (instead of a VCF, a genotype file can be used as input; see below) 
 
 <br />
 
-### **Dependencies**
+## **Dependencies**
 - scikit-allel (https://anaconda.org/conda-forge/scikit-allel)
 - plotly (https://anaconda.org/plotly/plotly)
 - gzip (https://anaconda.org/conda-forge/gzip)
@@ -39,17 +42,15 @@ ___
 
 <br />
 
-### **Usage**
+## **Usage**
+
+### *Please refer to the Input Files section below to for file format specifiections.*
 
 <br />
 
 ```
-python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size> <window step> 
-<minor allel frequency> <pc> <filter column name> <filter column value> <color column name> <guide samples>
+python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size> <window step> <minor allel frequency> <pc> <filter column name> <filter column value> <color column name> <guide samples>
 ```
-<br />
-
-### **Command line arguments**
 
 <br />
 
@@ -70,18 +71,18 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wind
 
 <br />
 
-### **Example command line**
+## **Example command line:**
 
-<br />
-
+### *Usage example based on the supplied test dataset.*
 ```
 python3 code/windowed_pca.py test_dataset/input/sample_vcf.gz test_dataset/input/metadata.tsv test_dataset/output/testrun chr1:1-35000000 1000000 10000 None 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9 inversion_state ind_7,ind_8,ind_9
 ```
 
 <br />
 
-### **Output files**
-Six output files are created by default, which can be grouped as follows:
+### *This generates six output files*
+
+
 1. Windowed PCA:
     1. ```${output_prefix}.w_pc_${pc}.tsv.gz``` contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
     2. ```${output_prefix}.pc_${pc}.${color_column_name}.html```: interactive HTML plot of the windowed PCA results, based on ```${output_prefix}.${chromosome_name}.pc_1.tsv```. if more than one color_column_name was specified, additional versions of this plot will be produced.
@@ -91,8 +92,9 @@ Six output files are created by default, which can be grouped as follows:
     2. ```${output_prefix}.w_stats.html```: interactive HTML plot of this per windows stats
     3. ```${output_prefix}.w_stats.pdf```: same as interactive HTML, just PDF
 
+<br />
 
-### **PLEASE NOTE:**
+### **Please note:**
 This is an improved version of earlier scripts. It has been tested extensively and should produce 
 identical results, but please let me know if you notice any issues.
 
@@ -107,14 +109,13 @@ should greatly reduce memory requirements (and potentially speed)
 A copy of the previous version of the script is still available in ```legacy/windowed_pca_v1.py``` 
 
 
-### Notes:
-- Any biallelic variants can be used as lng as the are encoded as 0 (hom ref), 1 (het), 2 (hom alt). I have used InDels smaller 20 bp (instead of SNPs) before and got nice results
-- All columns in metadata will be included in hover display in HTML plots
-- If output files (TSVs) from a previous run are detected (same output prefix), they will be reused for plotting instead of calculating new ones. This is useful to adjust the color scheme of the plots. To rerun everything from scratch, delete existing output files.
-- The threshold for the minimum number of SNPs per window is 50 and can be adjusted at the top of windowed_pca.py.
-- A major challenge for windowed PCAs is that the PCA in each window is conducted independently, and rotation is random. This results in random switching of window polarization along the component axis in the raw data, and very noisy plots. The script implements a correction step that aims at polarizing the orientation based on variance and mean of the previous window, using a specified number of the individuals with the most extreme values across the entire dataset (parameters <variance threshold> and <mean threshold>) as guide samples. This gives acceptable results for many tested datasets, but is not always ideal. After the first round of plotting, specific samples can often be visually determined which would make good guide samples (i.e. samples that are always >0 or always <0. A single guide sample can be sufficient for correct polarization.
-- please contact me if you have any questions or run into problems
-
+Additional comments:
+- all columns in metadata will be included in hover display in HTML plots
+- if output files (TSVs) from a previous run are detected (same output prefix), they will be reused for plotting instead of generating new ones
+- the threshold for the minimum number of SNPs per window is set to 25 and can be adjusted in the the main script
+- in principal, any type of biallelic variants can be used as long as they are encoded as 0 (hom ref), 1 (het), 2 (hom alt), e.g. InDels ≤20 bp instead of SNPs
+- a major challenge for windowed PCAs is that the PCA in each window is conducted independently, and rotation is random (--> noisy plots). The script implements a correction step that aims at polarizing the orientation based on variance and mean of the previous window, using a subset of 'guide samples'. Thne automatic guide sample selection is not always ideal. Therefore, after the first round of plotting, suited samples can often be visually determined (i.e. samples that never cross y=0). A single guide sample can be sufficient for correct polarization.
+**********
 
 
 
@@ -125,6 +126,8 @@ A copy of the previous version of the script is still available in ```legacy/win
 
 <br />
 <br />
+
+**********
 
 # **Input Files**
 
