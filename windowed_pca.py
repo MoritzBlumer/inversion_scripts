@@ -6,13 +6,6 @@
 
 
 
-## Settings
-min_var_per_w = 50  # minimum number of polymorphic variants per window
-mean_threshold = 3  # if no guide samples specified, choose the n samples with largest mean during
-                    # guide sample selection
-float_precision = 7 # float precision for text output
-
-
 ## File info
 __author__ = 'Moritz Blumer, 2023'
 __version__ = '2.0'
@@ -25,9 +18,11 @@ import numpy as np
 import pandas as pd
 import gzip
 import allel
-from numba import njit
 
-min_maf = 0.05
+
+## Config
+from modules import config
+
 
 ## Private functions
 
@@ -94,8 +89,8 @@ def parse_arguments():
     # change str to int where appropriate
     start, stop, w_size, w_step, pc = int(start), int(stop), int(w_size), int(w_step), int(pc)
 
-    # change min_maf to float if specified
-    min_maf = float(min_maf) if not 'None' else None
+    # change min_maf to float if specified and update config
+    config.min_maf = float(min_maf) if not min_maf == 'None' else None
 
     # change output_prefix to lower case
     output_prefix = output_prefix.lower()
@@ -123,47 +118,19 @@ def fetch_variant_file_samples(variant_file_path):
     return variant_file_sample_lst
 
 
-@njit()
-def min_maf_filter(gt_arr, min_maf):
-    '''
-    Drop SNPs with minor allele frequency below specified value
-    '''
-
-    # allele count
-    n_alleles = 2 * gt_arr.shape[1]
-
-    # calculate allel frequencies and multiple with -1 if AF > 0.05 (because input data may not be 
-    # polarized by major/minor allel)
-    afs = np.sum(gt_arr, axis=1) / n_alleles
-    afs[afs > 0.5] = 1 - afs[afs > 0.5]
-    
-    # keep only sites where AF >= min_maf
-    gt_arr = gt_arr[afs >= min_maf]
-
-    return gt_arr
-
-
-def pca(win, w_start, w_size):
+def pca(w_gt_arr, w_start, w_size):
     '''
     Conduct PCA, but if (n_variants < min_var_per_w) generate empty/dummy output instead
     '''
-
-    # apply minor allel frequency filter if specified
-    if min_maf:
-        gt_arr = min_maf_filter(gt_arr, min_maf)
-
-    # trim off pos info
-    win = [x[1:] for x in win]
 
     # get window mid for X value
     w_mid = int(w_start + w_size/2-1)
 
     # count variants
-    n_variants = len(win)
+    n_variants = w_gt_arr.shape[0]
 
     # if # variants passes specified threshold  
-    if n_variants >= min_var_per_w:
-        w_gt_arr = np.array(win, dtype=np.int8)
+    if n_variants >= config.min_var_per_w:
         pca = allel.pca(
             w_gt_arr,
             n_components=2,
@@ -183,11 +150,11 @@ def pca(win, w_start, w_size):
     else:
         print(
             '[INFO] Skipped window ' + str(w_start) + '-' + str(w_start + w_size-1) + ' with ' +
-            str(n_variants) + ' variants (threshold is ' + str(min_var_per_w) +
+            str(n_variants) + ' variants (threshold is ' + str(config.min_var_per_w) +
             ' variants per window)',
             file=sys.stderr, flush=True,
         )
-        empty_array = [None] * len(win[0])
+        empty_array = [None] * len(w_gt_arr[0])
         out = [
             empty_array,
             empty_array,
@@ -224,6 +191,7 @@ def windowed_pca(variant_file_path, chrom, start, stop, metadata_df, w_size, w_s
             w_size, w_step,
             pca,
             skip_monomorphic=True,
+            min_maf = config.min_maf,
         )
 
     elif variant_file_path.endswith('.tsv') or variant_file_path.endswith('.tsv.gz'):
@@ -235,6 +203,7 @@ def windowed_pca(variant_file_path, chrom, start, stop, metadata_df, w_size, w_s
             w_size, w_step,
             pca,
             skip_monomorphic=True,
+            min_maf = config.min_maf,
         )
 
     # compile output dataframe for windowed PCA
@@ -266,8 +235,8 @@ def main():
 
     # make output directory if output_prefix contains '/'
     if '/' in output_prefix:
-        if not os.path.exists('/'.join(output_prefix.split('/')[-1]) + '/'):
-            os.makedirs(output_prefix)
+        if not os.path.exists('/'.join(output_prefix.split('/')[0:-1]) + '/'):
+            os.makedirs('/'.join(output_prefix.split('/')[0:-1]) + '/')
 
     # compile text and stats figure output files (pc figure depends on color taxon --> see below)
     w_pca_tsv_path =        output_prefix + '.w_pc_' + str(pc) + '.tsv.gz'
@@ -334,7 +303,7 @@ def main():
         from modules.utils import polarize
         w_pca_df = polarize(
             w_pca_df,
-            mean_threshold=mean_threshold,
+            mean_threshold=config.mean_threshold,
             guide_samples=guide_samples,
         )
 
@@ -347,14 +316,14 @@ def main():
             w_pca_tsv_path,
             sep='\t',
             na_rep='NA',
-            float_format='%.' + str(float_precision) + 'f',
+            float_format='%.' + str(config.float_precision) + 'f',
             compression='gzip',
         )
         w_stats_df.to_csv(
             w_stats_tsv_path,
             sep='\t',
             na_rep='NA',
-            float_format='%.' + str(float_precision) + 'f',
+            float_format='%.' + str(config.float_precision) + 'f',
             compression='gzip',
         )
 
@@ -406,7 +375,7 @@ def main():
         w_stats_df,
         chrom, start, stop,
         w_size, w_step,
-        min_var_per_w,
+        config.min_var_per_w,
     )
     w_stats_fig.write_html(
         w_stats_fig_html_path
