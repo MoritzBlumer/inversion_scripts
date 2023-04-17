@@ -45,7 +45,6 @@ def gt_min_maf_filter(w_gt_arr, min_maf):
     afs[afs > 0.5] = 1 - afs[afs > 0.5]
     
     # keep only sites where AF >= min_maf
-    print(min_maf)
     w_gt_arr = w_gt_arr[afs >= min_maf]
 
     return w_gt_arr

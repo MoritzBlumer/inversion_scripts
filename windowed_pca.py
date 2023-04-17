@@ -183,8 +183,8 @@ def windowed_pca(variant_file_path, chrom, start, stop, metadata_df, w_size, w_s
 
     # conduct windowed PCA using window_parser() function
     if variant_file_path.endswith('.vcf') or variant_file_path.endswith('.vcf.gz'):
-        from modules.window_parser import win_vcf
-        win_vcf(
+        from modules.window_parser import win_vcf_gt
+        win_vcf_gt(
             variant_file_path,
             chrom, start, stop,
             metadata_df['id'],
