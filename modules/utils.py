@@ -1,8 +1,11 @@
 ## Dependencies
-import gzip
 import pandas as pd
 import numpy as np
 import plotly, plotly.express as px
+
+
+## Config
+from modules import config
 
 
 ## Windowed pca scripts
