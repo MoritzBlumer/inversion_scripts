@@ -52,23 +52,39 @@ def gt_min_maf_filter(w_gt_arr, min_maf):
 
 def gt_process_win(win, w_start, w_size, min_maf, func):
     '''
+    Remove POS info and convert to numpy array, return empty array if there are no variants
+    Call target function: func(w_gt_arr, w_start, w_size)
+    '''
+
+    # non-empty: trim off pos info, convert to numpy arr, apply min_maf filter
+    if win:
+        win = np.array([x[1:] for x in win], dtype=np.int8)
+        w_gt_arr = gt_min_maf_filter(w_gt_arr, min_maf) if min_maf else w_gt_arr
+
+    # empty: convert to empty numpy arr
+    else:
+        w_gt_arr = np.empty((0,0))
+    
+    # call target function
+    func(w_gt_arr, w_start, w_size)
+
+def pl_process_win(win, w_start, w_size, min_maf, func):
+    '''
     remove POS info and convert to numpy array, return empty array if there are no variants
     '''
 
     # non-empty: trim off pos info, convert to numpy arr, apply min_maf filter & target function
     if win:
-
-        win = [x[1:] for x in win]
+        format_arr = np.array([x[1].split(':') for x in win])
+        win = np.array([x[2:] for x in win])
         w_gt_arr = np.array(win, dtype=np.int8)
         w_gt_arr = gt_min_maf_filter(w_gt_arr, min_maf) if min_maf else w_gt_arr
         func(w_gt_arr, w_start, w_size)
 
     # empty: convert to empty numpy arr & apply target function
     else:
-
         w_gt_arr = np.empty((0,0))
         func(w_gt_arr, w_start, w_size)
-
 
 
 
@@ -79,7 +95,6 @@ def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_s
                 skip_monomorphic=False, min_maf=False):
     '''
     Apply a target function to windows of variants in an (optionally gzipped) genotype file
-    (limited to one chromosome)
     '''
 
     # calculate total number of windows
@@ -145,11 +160,10 @@ def win_gt_file(gt_file_path, chrom, start, stop, target_sample_lst, w_size, w_s
     )
 
 
-def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, func, \
+def win_vcf_gt(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, func, \
             skip_monomorphic=False, min_maf=False):
     '''
-    Apply a target function to windows of variants in an (optionally gzipped) genotype file 
-    (limited to one chromosome)
+    Apply a target function to windows of called variants (GT field) in an (optionally gzipped) VCF
     '''
 
     # define genotype encoding
@@ -251,4 +265,85 @@ def win_vcf(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, fun
 
 ## Parsing genotype likelihoods from BEAGLE file
 
-# ...
+
+########
+# REMOVE SKIP MONOMORPHIC FROM win_vcf_pl
+
+def win_vcf_pl(vcf_path, chrom, start, stop, target_sample_lst, w_size, w_step, func, \
+            skip_monomorphic=False, min_maf=False):
+    '''
+    Apply a target function to windows of phred-scaled genotype likelohoods (PL) in an (optionally 
+    gzipped) VCF
+
+    '''
+
+    # calculate total number of windows
+    config.n_windows = len(list(range(start, stop-w_size+2, w_step)))
+
+    # open iput file
+    read_func = gzip.open if vcf_path.endswith('.gz') else open
+    with read_func(vcf_path, 'rt') as vcf:
+
+        for line in vcf:
+            if line.startswith('#CHROM'):
+
+                # fetch sample ids from header and derive sample index positions
+                vcf_sample_lst = line.strip().split('\t')[9:]
+                sample_idx_lst = [vcf_sample_lst.index(x) for x in target_sample_lst]
+                break
+
+    # initiate first window
+    w_start = start
+    w_stop = w_start + w_size-1
+    w_idx = 0
+    win = []
+
+    with read_func(vcf_path, 'rt') as vcf:
+
+        # traverse input file
+        for line in vcf:
+            if line.startswith('#'): continue
+
+            line = line.strip().split('\t')
+            q_chrom = line[0]
+            pos = int(line[1])
+            
+            # skip other than the specified chromosome
+            if q_chrom != chrom: continue
+
+            # keep only sites with PL field
+            format = line[8].split(':')
+            if not 'PL' in format:
+                continue
+
+            # extract format + genotype field, which contain the required info to parse the PLs
+            pl_data = line[8:]
+
+            # case: pos exceeds current window
+            while w_stop < pos:
+                
+                # apply min_maf filter if specified and if window contains variants: apply function
+                if win: pl_process_win(win, w_start, w_size, min_maf, sample_idx_lst, func)
+                if stop < w_stop: break
+                w_start, w_stop, w_idx, win = gt_init_win(
+                    w_start, w_stop,
+                    w_idx, win,
+                    w_size, w_step)
+
+            # append pos (and genotypes) to current window
+            if pos > w_start: win.append([pos] + pl_data)
+
+            # if end of window is reached: apply min_maf filter, function & initialize
+            if w_stop <= pos:
+                pl_process_win(win, w_start, w_size, min_maf, sample_idx_lst, func)
+                if stop < w_stop: break
+                w_start, w_stop, w_idx, win = gt_init_win(
+                    w_start, w_stop,
+                    w_idx, win,
+                    w_size, w_step)
+                
+    # print exit message
+    print(
+        '\n[INFO] Processed all windows',
+        file=sys.stderr, flush=True,
+    )

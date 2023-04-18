@@ -92,6 +92,9 @@ def parse_arguments():
     # change min_maf to float if specified and update config
     config.min_maf = float(min_maf) if not min_maf == 'None' else None
 
+    # set PC in config
+    config.pc = pc
+
     # change output_prefix to lower case
     output_prefix = output_prefix.lower()
 
@@ -165,7 +168,7 @@ def pca(w_gt_arr, w_start, w_size):
 
     # append output
     w_mid_lst.append(w_mid)
-    w_pca_lst.append(out[0]) if pc==1 else out[1] # depending on whether PC1 or PC2 was specified
+    w_pca_lst.append(out[0]) if config.pc==1 else out[1] # depending on whether PC1 or PC2 was specified
     w_stats_lst.append([out[2], out[3], out[4]])
 
 
@@ -239,7 +242,7 @@ def main():
             os.makedirs('/'.join(output_prefix.split('/')[0:-1]) + '/')
 
     # compile text and stats figure output files (pc figure depends on color taxon --> see below)
-    w_pca_tsv_path =        output_prefix + '.w_pc_' + str(pc) + '.tsv.gz'
+    w_pca_tsv_path =        output_prefix + '.w_pc_' + str(config.pc) + '.tsv.gz'
     w_stats_tsv_path =      output_prefix + '.w_stats'         + '.tsv.gz'
     w_stats_fig_html_path = output_prefix + '.w_stats'         + '.html'
     w_stats_fig_pdf_path =  output_prefix + '.w_stats'         + '.pdf'
@@ -332,7 +335,7 @@ def main():
     w_pca_anno_df = annotate(
         w_pca_df,
         metadata_df,
-        'pc_' + str(pc),
+        'pc_' + str(config.pc),
     )
 
     # free up memory
@@ -347,13 +350,13 @@ def main():
     for c_taxon in color_taxon.split(','): 
 
         # compile output paths
-        w_pca_fig_html_path = output_prefix + '.w_pc_' + str(pc) + '.' + c_taxon + '.html'
-        w_pca_fig_pdf_path =  output_prefix + '.w_pc_' + str(pc) + '.' + c_taxon +  '.pdf'
+        w_pca_fig_html_path = output_prefix + '.w_pc_' + str(config.pc) + '.' + c_taxon + '.html'
+        w_pca_fig_pdf_path =  output_prefix + '.w_pc_' + str(config.pc) + '.' + c_taxon +  '.pdf'
 
         # plot & save
         w_pca_fig = plot_w_pca(
             w_pca_anno_df,
-            pc,
+            config.pc,
             c_taxon,
             chrom, start, stop,
             w_size, w_step,
