@@ -112,6 +112,7 @@ def fetch_variant_file_samples(variant_file_path):
             for line in vcf:
                 if line.startswith('#CHROM'):
                     variant_file_sample_lst = line.strip().split('\t')[9:]
+                    break
 
     # genotype file
     elif variant_file_path.endswith('.tsv') or variant_file_path.endswith('.tsv.gz'):
@@ -157,10 +158,10 @@ def pca(w_gt_arr, w_start, w_size):
             ' variants per window)',
             file=sys.stderr, flush=True,
         )
-        empty_array = [None] * len(w_gt_arr[0])
+        empty_lst = [None] * len(w_gt_arr[0])
         out = [
-            empty_array,
-            empty_array,
+            empty_lst,
+            empty_lst,
             None,
             None,
             n_variants,

@@ -5,6 +5,7 @@ mean_threshold = 3  # if no guide samples specified, use $mean_threshold samples
 float_precision = 7 # float precision for text output
 
 
-## SHARED VARIABLES (don't change anything below here, min_maf can be specified in the command line)
+## SHARED VARIABLES (don't change anything below, min_maf can be specified in the command line)
 n_windows = None
 min_maf = None
+pc = None
