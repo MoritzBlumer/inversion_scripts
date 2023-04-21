@@ -97,7 +97,7 @@ should greatly reduce memory requirements (and potentially speed)
 - improved per window stats plots
 - guide sample specification elevated to proper command line option
 - format for the genotype file slightly changed (REF + ALT columns dropped, as they are not used in the analysis) --> keep that in mind when working with existing input data
-A copy of the previous version of the script is still available in ```legacy/windowed_pca_v1.py``` 
+- A copy of the previous version of the script is still available in ```legacy/windowed_pca_v1.py``` 
 
 _Additional comments:_
 - all columns in metadata will be included in hover display in HTML plots
