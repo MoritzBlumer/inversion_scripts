@@ -142,7 +142,7 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wind
 
 | Argument | Type | Description |
 | ----------------------- | --- | -------------------------------- | 
-| **threads **   | int | number of threads to be used [default is 2] |
+| **threads**   | int | number of threads to be used [default is 2] |
 
 
 ## **Example command line:**
