@@ -1,6 +1,7 @@
 ## Dependencies
 import pandas as pd
 import numpy as np
+import gzip
 import plotly, plotly.express as px
 
 
@@ -9,6 +10,32 @@ from modules import config
 
 
 ## Windowed pca scripts
+
+def fetch_variant_file_samples(variant_file_path):
+    '''
+    Fetch sample ids from variant file (used by read_metadata())
+    '''
+
+    read_func = gzip.open if variant_file_path.endswith('.gz') else open
+    
+    # vcf
+    if variant_file_path.endswith('.vcf') or variant_file_path.endswith('.vcf.gz'):
+        with read_func(variant_file_path, 'rt') as vcf:
+            for line in vcf:
+                if line.startswith('#CHROM'):
+                    variant_file_sample_lst = line.strip().split('\t')[9:]
+                    break
+
+    # genotype file
+    elif variant_file_path.endswith('.tsv') or variant_file_path.endswith('.tsv.gz'):
+        with read_func(variant_file_path, 'rt') as gt_file:
+            variant_file_sample_lst = gt_file.readline().strip().split('\t')[2:]
+
+    # remove potential duplicates (in case of e.g. GL file) while preserving order
+    variant_file_sample_lst = list(dict.fromkeys(variant_file_sample_lst))
+
+    return variant_file_sample_lst
+
 
 def read_metadata(metadata_path, variant_file_sample_lst, taxon=None, group=None):
     '''
@@ -318,7 +345,7 @@ def plot_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w):
         y=[min_var_per_w-0.05*min_var_per_w],
         mode='lines+text',
         text=['min # of variants threshold '],
-        textposition='bottom left',
+        textposition='top left',
         textfont=dict(color=['#595959']),
         showlegend=False,
         ),

@@ -7,5 +7,6 @@ float_precision = 7 # float precision for text output
 
 ## SHARED VARIABLES (don't change anything below, min_maf can be specified in the command line)
 n_windows = None
-min_maf = None
+min_maf = 0.01
 pc = None
+n_threads = 2

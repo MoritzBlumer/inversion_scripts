@@ -16,8 +16,7 @@ __email__ = 'lmb215@cam.ac.uk'
 import sys, os
 import numpy as np
 import pandas as pd
-import gzip
-import allel
+from pcangsd.covariance import emPCA
 
 
 ## Config
@@ -32,14 +31,14 @@ def parse_arguments():
     '''
 
     global variant_file_path, metadata_path, output_prefix, chrom, start, stop, w_size, w_step, \
-        min_maf, pc, taxon, group, color_taxon, guide_samples
+        min_maf, pc, taxon, group, color_taxon, guide_samples, n_threads
 
     # fetch arguments    
     _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, min_maf, pc, \
-        taxon, group, color_taxon, guide_samples = sys.argv
+        taxon, group, color_taxon, guide_samples, n_threads = sys.argv
 
     # print help message if incorrect number of arguments was specified
-    if len(sys.argv) < 13:
+    if len(sys.argv) < 14:
         print(
             '   python windowed_pca.py <variant file> <metadata> <output prefix> <region>\n\
                                 <window size> <window step size> <pc> <filter column name>\n\
@@ -55,7 +54,7 @@ def parse_arguments():
             <window size>            int    sliding window size in bp, e.g. "1000000"\n\
             <window step>            int    sliding window step size in bp, e.g. "10000"\n\
             <minor allel frequency>  float  minor allel frequency threshold; specify\n\
-                                            "None" to disable filter [default is 0.01]\n\
+                                            [default is 0.01] \n\
             <pc>                     int    principal component to use ("1" or "2")\n\
             <filter column name>     str    metadata column name to filter for\n\
                                             individuals to includede in the analysis,\n\
@@ -77,7 +76,8 @@ def parse_arguments():
             <guide samples>          str    list of samples to use forpolarization,\n\
                                             e.g. "ind1,ind2,ind3"; specify "None" for\n\
                                             automatic guide sample selection(details\n\
-                                            --> README)',
+                                            --> README)\n\
+            <threads>                int    number of threads to be used [default is 2]',
         file=sys.stderr,
         )
 
@@ -87,44 +87,54 @@ def parse_arguments():
     stop = region.split(':')[1].split('-')[1]
 
     # change str to int where appropriate
-    start, stop, w_size, w_step, pc = int(start), int(stop), int(w_size), int(w_step), int(pc)
+    start, stop, w_size, w_step, pc, n_threads = int(start), int(stop), int(w_size), int(w_step), \
+        int(pc), int(n_threads)
 
     # change min_maf to float if specified and update config
     config.min_maf = float(min_maf) if not min_maf == 'None' else None
 
-    # set PC in config
-    config.pc = pc
+    # update PC and n_threads in config
+    config.pc, config.n_threads = pc, n_threads
 
     # change output_prefix to lower case
     output_prefix = output_prefix.lower()
 
 
-def pca(w_gt_arr, w_start, w_size):
+def pcangsd(w_gl_arr, min_maf_arr, w_start, w_size, n_threads):
     '''
-    Conduct PCA, but if (n_variants < min_var_per_w) generate empty/dummy output instead
+    Conduct PCAngsd PCA, but if (n_variants < min_var_per_w) generate empty/dummy output instead
     '''
 
     # get window mid for X value
     w_mid = int(w_start + w_size/2-1)
 
     # count variants
-    n_variants = w_gt_arr.shape[0]
+    n_variants = w_gl_arr.shape[0]
 
     # if # variants passes specified threshold  
     if n_variants >= config.min_var_per_w:
-        pca = allel.pca(
-            w_gt_arr,
-            n_components=2,
-            copy=True,
-            scaler='patterson',
-            ploidy=2,
-        )
+
+        # compute covariance matrix with PCAngsd
+        cov_arr, _, _ = emPCA(w_gl_arr, min_maf_arr, 0, 100, 1e-5, n_threads)
+
+        # compute eigenvalues and -vectors
+        eigenval_arr, eigenvec_arr = np.linalg.eig(cov_arr)
+
+        # sort by eigenvalue
+        idx = eigenval_arr.argsort()[::-1]   
+        eigenval_arr = eigenval_arr[idx]
+        eigenvec_arr = eigenvec_arr[:,idx]
+
+        # calculate % variance explained
+        pct_exp_arr = [x/sum(eigenval_arr)*100 for x in eigenval_arr]
+
+        # prepare output
         out = [
-            pca[0][:, 0],
-            pca[0][:, 1],
-            pca[1].explained_variance_ratio_[0]*100,
-            pca[1].explained_variance_ratio_[1]*100,
-            n_variants,
+            eigenvec_arr[:, 0],
+            eigenvec_arr[:, 1],
+            pct_exp_arr[0],
+            pct_exp_arr[1],
+            n_variants,   
         ]
 
     # else create empty output
@@ -135,10 +145,11 @@ def pca(w_gt_arr, w_start, w_size):
             ' variants per window)',
             file=sys.stderr, flush=True,
         )
-        empty_lst = [None] * len(w_gt_arr[0])
+
+        empty_array = [None] * (len(w_gl_arr[0])//2)
         out = [
-            empty_lst,
-            empty_lst,
+            empty_array,
+            empty_array,
             None,
             None,
             n_variants,
@@ -164,27 +175,36 @@ def windowed_pca(variant_file_path, chrom, start, stop, metadata_df, w_size, w_s
 
     # conduct windowed PCA using window_parser() function
     if variant_file_path.endswith('.vcf') or variant_file_path.endswith('.vcf.gz'):
-        from modules.window_parser import win_vcf_gt
-        win_vcf_gt(
+        from modules.window_parser import win_vcf_pl
+        win_vcf_pl(
             variant_file_path,
             chrom, start, stop,
             metadata_df['id'],
             w_size, w_step,
             pca,
-            skip_monomorphic=True,
-            min_maf = min_maf,
+            min_maf,
         )
 
-    elif variant_file_path.endswith('.tsv') or variant_file_path.endswith('.tsv.gz'):
-        from modules.window_parser import win_gt_file
-        win_gt_file(
+    elif variant_file_path.endswith('pl.tsv') or variant_file_path.endswith('pl.tsv.gz'):
+        from modules.window_parser import win_pl_file
+        win_pl_file(
             variant_file_path,
             chrom, start, stop,
             metadata_df['id'],
             w_size, w_step,
             pca,
-            skip_monomorphic=True,
-            min_maf = min_maf,
+            min_maf,
+        )
+
+    elif variant_file_path.endswith('gl.tsv') or variant_file_path.endswith('gl.tsv.gz'):
+        from modules.window_parser import win_gl_file
+        win_gl_file(
+            variant_file_path,
+            chrom, start, stop,
+            metadata_df['id'],
+            w_size, w_step,
+            pca,
+            min_maf,
         )
 
     # exit if no variants found
@@ -287,7 +307,7 @@ def main():
             metadata_df,
             w_size, w_step,
             config.min_maf,
-            pca,
+            pcangsd,
         )
 
         # polarize windowed PCA output
