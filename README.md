@@ -223,7 +223,7 @@ bcftools view -s $samples -v snps -m2 -M2 sample.vcf.gz | bcftools query -f '%CH
 ```
 Check out the first rows of the first three samples in the PL file:
 ```
-zcat sample.gt.tsv.gz | head -n 11 | cut -f
+zcat sample.gt.tsv.gz | head -n 11 | cut -f1-11
 CHROM   POS     ind_1   ind_1   ind_1   ind_2   ind_2   ind_2   ind_3   ind_3   ind_3
 chr1    69964   0       15      172     0       18      186     0       51      255
 chr1    70381   0       90      255     37      0       200     48      0       166
