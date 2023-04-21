@@ -179,7 +179,7 @@ ind_5   19X     species_2       inverted
 ind_6   19X     species_2       heterozygous
 ```
 
-## **Preparing a GT/PL/GL file from a VCF file (biallelic SNPs)**
+## **Preparing a GT/PL/GL file from a VCF**
 A file storing only genotypes or likelihoods can be much more space efficient than a full scale VCF. It contains only the chromosome name, position and per sample genotypes (encoded as 0=hom ref, 1=het, 2=hom alt, -1=missing data) or genotype likelihoods (three columns per sample, see https://samtools.github.io/hts-specs/VCFv4.2.pdf).
 Below it is shown how to create such files based on the provided minimal information sample VCF.
 
