@@ -99,6 +99,9 @@ def parse_arguments():
     # change output_prefix to lower case
     output_prefix = output_prefix.lower()
 
+    # set guide_samples to NoneType if 'None' specified
+    if guide_samples == 'None': guide_samples = None 
+
 
 def pcangsd(w_gl_arr, min_maf_arr, w_start, w_size, n_threads):
     '''
@@ -117,7 +120,7 @@ def pcangsd(w_gl_arr, min_maf_arr, w_start, w_size, n_threads):
         # compute covariance matrix with PCAngsd
         cov_arr, _, _ = emPCA(w_gl_arr, min_maf_arr, 0, 100, 1e-5, n_threads)
 
-        # compute eigenvalues and -vectors
+        # eigendecomposition
         eigenval_arr, eigenvec_arr = np.linalg.eig(cov_arr)
 
         # sort by eigenvalue
@@ -199,6 +202,17 @@ def windowed_pca(variant_file_path, chrom, start, stop, metadata_df, w_size, w_s
     elif variant_file_path.endswith('gl.tsv') or variant_file_path.endswith('gl.tsv.gz'):
         from modules.window_parser import win_gl_file
         win_gl_file(
+            variant_file_path,
+            chrom, start, stop,
+            metadata_df['id'],
+            w_size, w_step,
+            pca,
+            min_maf,
+        )
+
+    elif variant_file_path.endswith('.beagle') or variant_file_path.endswith('.beagle.gz'):
+        from modules.window_parser import win_beagle
+        win_beagle(
             variant_file_path,
             chrom, start, stop,
             metadata_df['id'],

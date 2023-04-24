@@ -26,10 +26,15 @@ def fetch_variant_file_samples(variant_file_path):
                     variant_file_sample_lst = line.strip().split('\t')[9:]
                     break
 
-    # genotype file
+    # GT/PL/GL file
     elif variant_file_path.endswith('.tsv') or variant_file_path.endswith('.tsv.gz'):
         with read_func(variant_file_path, 'rt') as gt_file:
             variant_file_sample_lst = gt_file.readline().strip().split('\t')[2:]
+
+    # BEAGLE file
+    elif variant_file_path.endswith('.beagle') or variant_file_path.endswith('.beagle.gz'):
+        with read_func(variant_file_path, 'rt') as gt_file:
+            variant_file_sample_lst = gt_file.readline().strip().split('\t')[5:]
 
     # remove potential duplicates (in case of e.g. GL file) while preserving order
     variant_file_sample_lst = list(dict.fromkeys(variant_file_sample_lst))

@@ -98,6 +98,9 @@ def parse_arguments():
     # change output_prefix to lower case
     output_prefix = output_prefix.lower()
 
+    # set guide_samples to NoneType if 'None' specified
+    if guide_samples == 'None': guide_samples = None 
+
 
 def pca(w_gt_arr, w_start, w_size):
     '''

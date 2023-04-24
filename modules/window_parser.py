@@ -530,7 +530,7 @@ def win_vcf_pl(variant_file_path, chrom, start, stop, target_sample_lst, w_size,
 def win_gl_file(variant_file_path, chrom, start, stop, target_sample_lst, w_size, w_step, func, \
                 min_maf=config.min_maf):
     '''
-    Apply a target function to windows of variants in an (optionally gzipped) PL file
+    Apply a target function to windows of variants in an (optionally gzipped) GL file
     '''
 
     # calculate total number of windows
@@ -568,6 +568,81 @@ def win_gl_file(variant_file_path, chrom, start, stop, target_sample_lst, w_size
             
             # fetch genotypes
             gls = [line[2:][idx] for idx in sample_idx_lst]
+
+            # case: pos exceeds current window
+            while w_stop < pos:
+                
+                # apply min_maf filter if specified and if window contains variants: apply function
+                if win: gl_process_win(win, w_start, w_size, min_maf, func)
+                if stop < w_stop: break
+                w_start, w_stop, w_idx, win = init_win(
+                    w_start, w_stop,
+                    w_idx, win,
+                    w_size, w_step)
+                
+            # append pos (and genotypes) to current window if larger than window start
+            if pos > w_start: win.append([pos] + gls)
+
+            # if end of window is reached: apply min_maf filter, function & initialize
+            if w_stop <= pos:
+                gl_process_win(win, w_start, w_size, min_maf, func)
+                if stop < w_stop: break
+                w_start, w_stop, w_idx, win = init_win(
+                    w_start, w_stop,
+                    w_idx, win,
+                    w_size, w_step)
+                
+    # print exit message
+    print(
+        '\n[INFO] Processed all windows',
+        file=sys.stderr, flush=True,
+    )
+
+
+## Parsing genotype likelihoods (GL) from a BEAGLE file
+
+def win_beagle(variant_file_path, chrom, start, stop, target_sample_lst, w_size, w_step, func, \
+                min_maf=config.min_maf):
+    '''
+    Apply a target function to windows of variants in an (optionally gzipped) BEAGLE file as
+    output by ANGSD -GL 1 -out genolike -doGlf 2
+    '''
+
+    # calculate total number of windows
+    config.n_windows = len(list(range(start, stop-w_size+2, w_step)))
+
+    # open uncompressed or gzip-compressed input file
+    read_func = gzip.open if variant_file_path.endswith('.gz') else open
+    with read_func(variant_file_path, 'rt') as variant_file:
+
+        # fetch sample ids from header
+        variant_file_sample_lst = variant_file.readline().strip().split('\t')[3:]
+
+        # derive sample index positions for first of 3 columns per sample, then add the second
+        sample_idx_lst = [variant_file_sample_lst.index(x) for x in target_sample_lst]
+        sample_idx_lst = [[i, i+1] for i in sample_idx_lst]
+        sample_idx_lst = [x for i in sample_idx_lst for x in i] # flatten
+
+        # remove duplicates (GL/PL file has 3 columns/sample) while preserving order
+        variant_file_sample_lst = list(dict.fromkeys(variant_file_sample_lst))
+
+        # initiate first window
+        w_start = start
+        w_stop = w_start + w_size-1
+        w_idx = 0
+        win = []
+
+        # traverse input file
+        for line in variant_file:
+            line = line.strip().split('\t')
+            q_chrom = line[0].rsplit('_', 1)[0]
+            pos = int(line[0].rsplit('_', 1)[1])
+            
+            # skip other than the specified chromosome
+            if q_chrom != chrom: continue
+            
+            # fetch genotypes
+            gls = [line[3:][idx] for idx in sample_idx_lst]
 
             # case: pos exceeds current window
             while w_stop < pos:
