@@ -98,6 +98,7 @@ should greatly reduce memory requirements (and potentially speed)
 - A copy of the previous version of the script is still available in ```legacy/windowed_pca_v1.py``` 
 
 _Additional comments:_
+- file type and compression is inferred from the suffix (*vcf.gz/*gt.tsv.gz/*gl.tsv.gz/*gp.tsv.gz/beagle.gz)
 - all columns in metadata will be included in hover display in HTML plots
 - if output files (TSVs) from a previous run are detected (same output prefix), they will be reused for plotting instead of generating new ones
 - the threshold for the minimum number of SNPs per window is set to 25 and can be adjusted in the modules/config.py
@@ -233,3 +234,7 @@ chr1    87602   0       18      174     0       39      255     0       75      
 chr1    87770   0       24      221     0       24      246     0       63      255
 chr1    93309   0       21      132     0       18      143     0       15      134
 ```
+
+## **Preparing a BEAGLE file**
+To generate a compatible BEAGLE file, follow ANGSD instructions (http://www.popgen.dk/angsd/index.php/Beagle_input)
+The file is expected to have a marker column of the format ${chromosome/scaffold}_${position}, followed by the allele1 and allele2 fields, and then three columns per sample with genotype likelihoods (GL)
