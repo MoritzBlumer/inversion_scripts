@@ -236,5 +236,20 @@ chr1    93309   0       21      132     0       18      143     0       15      
 ```
 
 ## **Preparing a BEAGLE file**
-To generate a compatible BEAGLE file, follow ANGSD instructions (http://www.popgen.dk/angsd/index.php/Beagle_input)
-The file is expected to have a marker column of the format ${chromosome/scaffold}_${position}, followed by the allele1 and allele2 fields, and then three columns per sample with genotype likelihoods (GL)
+To generate a compatible BEAGLE file, follow ANGSD instructions (http://www.popgen.dk/angsd/index.php/Beagle_input).
+The file is expected to have a marker column of the format ${chromosome/scaffold}_${position} (value after terminal underscore is used as POS), followed by the allele1 and allele2 fields, and then three columns per sample with genotype likelihoods (GL)
+
+_Here is an example:_
+```
+marker       allele1   allele2   ind_1   ind_1   ind_2   ind_2   ind_2   ind_3   ind_3   ind_3
+chr1_69964   0         15        172     0       18      186     0       51      255
+chr1_70381   0         90        255     37      0       200     48      0       166
+chr1_74191   0         9         80      0       27      224     0       45      255
+chr1_83728   0         6         58      0       9       95      0       33      255
+chr1_86817   0         27        245     0       24      241     0       48      255
+chr1_87124   0         27        240     0       36      255     0       42      255
+chr1_87362   0         18        166     0       27      255     0       27      198
+chr1_87602   0         18        174     0       39      255     0       75      255
+chr1_87770   0         24        221     0       24      246     0       63      255
+chr1_93309   0         21        132     0       18      143     0       15      134
+```
