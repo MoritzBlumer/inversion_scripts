@@ -2,7 +2,9 @@
 import pandas as pd
 import numpy as np
 import gzip
-import plotly, plotly.express as px
+import plotly
+import plotly.express as px
+import plotly.subplots as ps
 
 
 ## Config
@@ -228,7 +230,7 @@ def plot_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w):
     go = plotly.graph_objects
     
     # initialize figure
-    fig = plotly.subplots.make_subplots(
+    fig = ps.make_subplots(
         specs=[[{'secondary_y': True}]],
         x_title='<b>Genomic position<b>',
         subplot_titles=[
