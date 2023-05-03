@@ -34,14 +34,10 @@ def parse_arguments():
     global variant_file_path, metadata_path, output_prefix, chrom, start, stop, w_size, w_step, \
         min_maf, pc, taxon, group, color_taxon, guide_samples
 
-    # fetch arguments    
-    _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, min_maf, pc, \
-        taxon, group, color_taxon, guide_samples = sys.argv
-
     # print help message if incorrect number of arguments was specified
-    if len(sys.argv) < 13:
+    if len(sys.argv)!= 13:
         print(
-            '   python windowed_pca.py <variant file> <metadata> <output prefix> <region>\n\
+            '\n   python windowed_pca.py <variant file> <metadata> <output prefix> <region>\n\
                                 <window size> <window step size> <pc> <filter column name>\n\
                                 <filter column value> <color column name>\n\
                                 <guide samples>\n\n\
@@ -77,10 +73,14 @@ def parse_arguments():
             <guide samples>          str    list of samples to use forpolarization,\n\
                                             e.g. "ind1,ind2,ind3"; specify "None" for\n\
                                             automatic guide sample selection(details\n\
-                                            --> README)',
+                                            --> README)\n',
         file=sys.stderr,
         )
 
+    # fetch arguments    
+    _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, min_maf, pc, \
+        taxon, group, color_taxon, guide_samples = sys.argv
+    
     # fetch chrom, start, stop from regions string
     chrom = region.split(':')[0]
     start = region.split(':')[1].split('-')[0]
