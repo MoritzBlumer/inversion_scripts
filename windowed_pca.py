@@ -76,6 +76,7 @@ def parse_arguments():
                                             --> README)\n',
         file=sys.stderr,
         )
+        sys.exit()
 
     # fetch arguments    
     _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, min_maf, pc, \
