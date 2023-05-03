@@ -71,7 +71,7 @@ def parse_arguments():
                                             generated for each color scheme\n\
             <guide samples>          str    list of samples to use forpolarization,\n\
                                             e.g. "ind1,ind2,ind3"; specify "None" for\n\
-                                            automatic guide sample selection(details\n\
+                                            automatic guide sample selection (details\n\
                                             --> README)\n\
             <threads>                int    number of threads to be used [default is 2]\n',
         file=sys.stderr,
