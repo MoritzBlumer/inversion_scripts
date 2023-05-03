@@ -76,7 +76,8 @@ def parse_arguments():
             <threads>                int    number of threads to be used [default is 2]\n',
         file=sys.stderr,
         )
-        
+        sys.exit()
+ 
     # fetch arguments    
     _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, min_maf, pc, \
         taxon, group, color_taxon, guide_samples, n_threads = sys.argv
