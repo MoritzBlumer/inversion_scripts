@@ -101,6 +101,9 @@ def pl_fetch_target_pls(gt_fields, pl_idx, sample_idx_lst):
     '''
     pls = [gt_fields[idx].split(':')[pl_idx].split(',') for idx in sample_idx_lst]
     pls = [x for pl in pls if len(pl) == 3 for x in pl]
+    
+    # GATK encodes missing PL data as '.' --> drop lines where length of PLs != 3* n_samples
+    pls = [] if (len(pls)) != len(sample_idx_lst)*3 else pls
 
     return pls
 
