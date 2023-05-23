@@ -10,7 +10,7 @@
 <br />
 <br />
 
-# ```**windowed_pca.py**```
+# **```windowed_pca.py```**
 _Conduct PCAs in in genomic windows (using scikit-allel)_
 
 <br />
