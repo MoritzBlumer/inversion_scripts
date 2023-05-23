@@ -109,7 +109,7 @@ _Additional comments:_
 <br />
 <br />
 
-# **windowed_pcangsd.py**
+# **```windowed_pcangsd.py```**
 _Conduct PCAs on genotype likelihoods in in genomic windows (using PCAngsd)_
 
 ## **Overview**
