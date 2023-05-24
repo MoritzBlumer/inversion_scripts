@@ -121,8 +121,8 @@ def pcangsd(w_gl_arr, min_maf_arr, w_start, w_size, n_threads):
         # compute covariance matrix with PCAngsd
         cov_arr, _, _ = emPCA(w_gl_arr, min_maf_arr, 0, 100, 1e-5, n_threads)
 
-        # eigendecomposition
-        eigenval_arr, eigenvec_arr = np.linalg.eig(cov_arr)
+        # eigendecomposition (linalg.eigh instead of linalg.eig to strip imaginary part)
+        eigenval_arr, eigenvec_arr = np.linalg.eigh(cov_arr)
 
         # sort by eigenvalue
         idx = eigenval_arr.argsort()[::-1]   
