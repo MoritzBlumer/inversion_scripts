@@ -281,6 +281,18 @@ def main():
         group=group,
     )
 
+    # if guide sample was specified, check if it is in the input samples
+    if guide_samples:
+        guide_samples = set(guide_samples.split(','))
+        missing_guide_samples = list((guide_samples^set(metadata_df['id']))&guide_samples)
+        if len(missing_guide_samples) > 0:
+            print(
+                '\n[ERROR] Specified guide sample(s) ' + ','.join(missing_guide_samples) + 'are\
+                missing from the input samples\n',
+                file=sys.stderr, flush=True,
+            )
+            sys.exit()
+
     # check if IDs are unique
     if not len(metadata_df['id']) == len(set(metadata_df['id'])):
         print(
