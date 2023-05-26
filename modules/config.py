@@ -10,4 +10,4 @@ n_windows = None
 min_maf = 0.01
 pc = None
 n_threads = 2
-plot_scaling_factor = 20000
+plot_scaling_factor = 100000
