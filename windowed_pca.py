@@ -252,12 +252,12 @@ def main():
 
     # if guide sample was specified, check if it is in the input samples
     if guide_samples:
-        guide_samples = set(guide_samples.split(','))
-        missing_guide_samples = list((guide_samples^set(metadata_df['id']))&guide_samples)
-        if len(missing_guide_samples) > 0:
+        gs = set(guide_samples.split(','))
+        missing_gs = list((gs^set(metadata_df['id']))&gs)
+        if len(missing_gs) > 0:
             print(
-                '\n[ERROR] Specified guide sample(s) ' + ','.join(missing_guide_samples) + 'are\
-                missing from the input samples\n',
+                '\n[ERROR] Specified guide sample(s) ' + ', '.join(missing_gs) + ' are missing ' +
+                'from the input samples\n',
                 file=sys.stderr, flush=True,
             )
             sys.exit()
