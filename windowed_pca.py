@@ -16,7 +16,6 @@ __email__ = 'lmb215@cam.ac.uk'
 import sys, os
 import numpy as np
 import pandas as pd
-import gzip
 import allel
 
 
