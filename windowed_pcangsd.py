@@ -6,14 +6,23 @@
 
 
 
+
+
+
 ## File info
 __author__ = 'Moritz Blumer, 2023'
 __version__ = '2.0'
 __email__ = 'lmb215@cam.ac.uk'
 
 
-## Dependencies
+## Set the number of threads
 import sys, os
+os.environ["OMP_NUM_THREADS"] = str(sys.argv[13])
+os.environ["OPENBLAS_NUM_THREADS"] = str(sys.argv[13])
+os.environ["MKL_NUM_THREADS"] = str(sys.argv[13])
+
+
+## Dependencies
 import numpy as np
 import pandas as pd
 from pcangsd.covariance import emPCA
@@ -101,7 +110,8 @@ def parse_arguments():
     output_prefix = output_prefix.lower()
 
     # set guide_samples to NoneType if 'None' specified
-    if guide_samples == 'None': guide_samples = None 
+    if guide_samples == 'None': guide_samples = None
+
 
 
 def pcangsd(w_gl_arr, min_maf_arr, w_start, w_size, n_threads):
@@ -121,8 +131,8 @@ def pcangsd(w_gl_arr, min_maf_arr, w_start, w_size, n_threads):
         # compute covariance matrix with PCAngsd
         cov_arr, _, _ = emPCA(w_gl_arr, min_maf_arr, 0, 100, 1e-5, n_threads)
 
-        # eigendecomposition (linalg.eigh instead of linalg.eig to strip imaginary part)
-        eigenval_arr, eigenvec_arr = np.linalg.eigh(cov_arr)
+        # eigendecomposition
+        eigenval_arr, eigenvec_arr = np.linalg.eig(cov_arr)
 
         # sort by eigenvalue
         idx = eigenval_arr.argsort()[::-1]   
@@ -250,12 +260,28 @@ def windowed_pca(variant_file_path, chrom, start, stop, metadata_df, w_size, w_s
 
 
 
+
+
 ## Main
 
 def main():
 
     # parse command line arguments
     parse_arguments()
+
+    ## Set # threads
+    os.environ["OMP_NUM_THREADS"] = str(1)
+    os.environ["OPENBLAS_NUM_THREADS"] = str(1)
+    os.environ["MKL_NUM_THREADS"] = str(1)
+
+    import importlib
+    importlib.reload(np)
+    importlib.reload(pd)
+    #importlib.reload(emPCA)
+
+    # import numpy as np
+    # import pandas as pd
+    #from pcangsd.covariance import emPCA
 
     # make output directory if output_prefix contains '/'
     if '/' in output_prefix:
@@ -280,18 +306,6 @@ def main():
         taxon=taxon,
         group=group,
     )
-
-    # if guide sample was specified, check if it is in the input samples
-    if guide_samples:
-        gs = set(guide_samples.split(','))
-        missing_gs = list((gs^set(metadata_df['id']))&gs)
-        if len(missing_gs) > 0:
-            print(
-                '\n[ERROR] Specified guide sample(s) ' + ', '.join(missing_gs) + ' are missing ' +
-                'from the input samples\n',
-                file=sys.stderr, flush=True,
-            )
-            sys.exit()
 
     # check if IDs are unique
     if not len(metadata_df['id']) == len(set(metadata_df['id'])):
