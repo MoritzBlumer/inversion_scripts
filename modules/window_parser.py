@@ -78,8 +78,8 @@ def gl_min_maf_filter(w_gl_arr, min_maf, n_threads):
 
 def gt_process_win(win, w_start, w_size, min_maf, func):
     '''
-    Remove POS info and convert to numpy array, return empty array if there are no variants
-    Call target function: func(w_gt_arr, w_start, w_size)
+    Remove POS info,convert to numpy array, apply minMAF filter and return empty array if there are 
+    no variants. Call target function: func(w_gt_arr, w_start, w_size)
     '''
 
     # non-empty: trim off pos info, convert to numpy arr, apply min_maf filter
