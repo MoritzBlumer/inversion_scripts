@@ -229,8 +229,6 @@ def plot_pca_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per
     '''
     Plot per windowstats: % explained by PC1 and PC2 + # of variants per window
     '''
-
-    global missing_stretches # delete
     
     # for simplicity
     go = plotly.graph_objects
