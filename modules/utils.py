@@ -177,7 +177,7 @@ def annotate(w_df, metadata_df, value_col_name):
 
 def plot_w_pca(w_pca_df, pc, color_taxon, chrom, start, stop, w_size, w_step):
     '''
-    Plot one PC for all included sampled along the chromosome
+    Plot one PC for all included samples along the chromosome
     '''
 
     # compile dct that sets hover data for html display
