@@ -2,7 +2,7 @@
 
 *This is becoming a collection of scripts to investigate genetic structure along the genome.*
 
-*If you find any of this useful and use it for your work, please consider citing this github.*
+*If you find any of this useful and use it for your work, please consider citing this repository.*
 
 *For questions/problems: lmb215@cam.ac.uk*
 **********
