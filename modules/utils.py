@@ -152,27 +152,27 @@ def polarize(w_pca_df, mean_threshold, guide_samples):
     return w_pca_df
 
 
-def annotate(w_pca_df, metadata_df, pc):
+def annotate(w_df, metadata_df, value_id):
     '''
     Pivot windowed pca output and annotate with metadata
     '''
 
     # annotate with metadata
     for column_name in metadata_df.columns:
-        w_pca_df[column_name] = list(metadata_df[column_name])
+        w_df[column_name] = list(metadata_df[column_name])
 
     # replace numpy NaN with 'NA' for plotting (hover_data display)
-    w_pca_df = w_pca_df.replace(np.nan, 'NA')
+    w_df = w_df.replace(np.nan, 'NA')
 
     # convert to long format for plotting
-    w_pca_anno_df = pd.melt(
-        w_pca_df,
+    w_anno_df = pd.melt(
+        w_df,
         id_vars=metadata_df.columns,
         var_name='window_mid',
-        value_name=pc,
+        value_name=value_id,
     )
 
-    return w_pca_anno_df
+    return w_anno_df
 
 
 def plot_w_pca(w_pca_df, pc, color_taxon, chrom, start, stop, w_size, w_step):
