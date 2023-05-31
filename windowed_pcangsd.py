@@ -171,7 +171,7 @@ def pcangsd(w_gl_arr, min_maf_arr, w_start, w_size, n_threads):
 
     # append output
     w_mid_lst.append(w_mid)
-    w_pca_lst.append(out[0]) if config.pc==1 else out[1] # depending on whether specification
+    w_pca_lst.append(out[0]) if config.pc==1 else out[1] # depending on PC specification
     w_stats_lst.append([out[2], out[3], out[4]])
 
 
