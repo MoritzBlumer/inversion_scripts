@@ -138,7 +138,7 @@ def pca(w_gt_arr, w_start, w_size):
             ' variants per window)',
             file=sys.stderr, flush=True,
         )
-        empty_lst = [None] * len(w_gt_arr[0])
+        empty_lst = [None] * w_gt_arr.shape[1]
         out = [
             empty_lst,
             empty_lst,
