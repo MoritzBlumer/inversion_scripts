@@ -175,26 +175,33 @@ def annotate(w_df, metadata_df, value_col_name):
     return w_anno_df
 
 
-def plot_w_pca(w_pca_df, pc, color_taxon, chrom, start, stop, w_size, w_step):
+def plot_per_sample_values(w_anno_df, plot_col, color_taxon, chrom, start, stop, w_size, w_step):
     '''
     Plot one PC for all included samples along the chromosome
     '''
 
+    # ensure plot_col is str
+    plot_col = str(plot_col)
+
+    # modify plot_col for output plot display
+    plot_col_str = plot_col.replace('_', ' ').upper() if plot_col.startswith('pc') \
+        else plot_col.replace('_', ' ').capitalize()
+
     # compile dct that sets hover data for html display
-    hover_data_dct = {x: True for x in w_pca_df.columns}
-    hover_data_dct['pc_' + str(pc)] = False
+    hover_data_dct = {x: True for x in w_anno_df.columns}
+    hover_data_dct[plot_col] = False
 
     # plot
     fig = px.line(
-        w_pca_df,
+        w_anno_df,
         x='window_mid',
-        y='pc_' + str(pc),
+        y=plot_col,
         width=(stop-start)/config.plot_scaling_factor, height=500,
         line_group='id',
         color=color_taxon,
         hover_name='id', 
         hover_data=hover_data_dct,
-        title=str('<b>Windowed PC ' + str(pc) + ' of ' + chrom + ':' + str(start) + '-' + 
+        title=str('<b>Windowed ' + plot_col_str + ' of ' + chrom + ':' + str(start) + '-' + 
                   str(stop) + '</b><br> (window size: ' + str(w_size) + ' bp, window step: ' + 
                   str(w_step) + ' bp)'), 
         labels = dict(window_mid = 'position'),
@@ -206,7 +213,8 @@ def plot_w_pca(w_pca_df, pc, color_taxon, chrom, start, stop, w_size, w_step):
         font_family='Arial',
         font_color='black',
         xaxis=dict(ticks='outside', mirror=True, showline=True, title='<b>Genomic position<b>'),
-        yaxis=dict(ticks='outside', mirror=True, showline=True, title='<b>PC ' + str(pc) + '<b>'),
+        yaxis=dict(ticks='outside', mirror=True, showline=True, 
+                   title='<b>' + plot_col_str + '<b>'),
         legend={'traceorder':'normal'}, 
         title={'xanchor': 'center', 'y': 0.9, 'x': 0.45})
 

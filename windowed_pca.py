@@ -349,7 +349,7 @@ def main():
             '\n[INFO] Generating output HTMLs & PDFs',
             file=sys.stderr, flush=True,
     )
-    from modules.utils import plot_w_pca
+    from modules.utils import plot_per_sample_values
     for c_taxon in color_taxon.split(','): 
 
         # compile output paths
@@ -357,9 +357,9 @@ def main():
         w_pca_fig_pdf_path =  output_prefix + '.w_pc_' + str(config.pc) + '.' + c_taxon +  '.pdf'
 
         # plot & save
-        w_pca_fig = plot_w_pca(
+        w_pca_fig = plot_per_sample_values(
             w_pca_anno_df,
-            config.pc,
+            'pc_' + str(config.pc),
             c_taxon,
             chrom, start, stop,
             w_size, w_step,
