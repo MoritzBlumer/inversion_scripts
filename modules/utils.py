@@ -61,7 +61,7 @@ def read_metadata(metadata_path, variant_file_sample_lst, taxon=None, group=None
     # subset input samples to match taxon group specification if specified
     if taxon and group:
         metadata_df = metadata_df.loc[metadata_df[taxon].isin(group.split(','))]
-    
+
     # remove individuals that are not in the genotype file
     exclude_lst = [x for x in list(metadata_df['id']) if x not in variant_file_sample_lst]
     for i in exclude_lst:
@@ -225,7 +225,7 @@ def plot_per_sample_values(w_anno_df, plot_col, color_taxon, chrom, start, stop,
     return fig
 
 
-def plot_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w):
+def plot_pca_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w):
     '''
     Plot per windowstats: % explained by PC1 and PC2 + # of variants per window
     '''

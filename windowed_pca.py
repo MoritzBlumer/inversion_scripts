@@ -376,8 +376,8 @@ def main():
     del w_pca_fig
 
     # plot window stats & save
-    from modules.utils import plot_w_stats
-    w_stats_fig = plot_w_stats(
+    from modules.utils import plot_pca_w_stats
+    w_stats_fig = plot_pca_w_stats(
         w_stats_df,
         chrom, start, stop,
         w_size, w_step,
