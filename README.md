@@ -67,7 +67,7 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wind
 
 *Usage example based on the supplied test dataset:*
 ```
-python3 windowed_pca.py test_dataset/input/sample.vcf.gz test_dataset/input/metadata.tsv test_dataset/output/test_vcf_gt chr1:1-33000000 1000000 10000 None 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6 inversion_state ind_2
+python3 windowed_pca.py test_dataset/input/sample.vcf.gz test_dataset/input/metadata.tsv test_dataset/output/pca_test_vcf_gt chr1:1-33000000 1000000 10000 None 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6 inversion_state ind_2
 ```
 
 
@@ -148,7 +148,7 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wind
 
 *Usage example based on the supplied test dataset, using 4 threads*
 ```
-python3 windowed_pcangsd.py test_dataset/input/sample.pl.tsv.gz test_dataset/input/metadata.tsv test_dataset/output/test_pl_file chr1:1-33000000 1000000 10000 0.01 1 id 2 ind_1,ind_2,ind_3,ind_4,ind_5,ind_6 inversion_state ind_2
+python3 windowed_pcangsd.py test_dataset/input/sample.pl.tsv.gz test_dataset/input/metadata.tsv test_dataset/output/pca_test_pl_file chr1:1-33000000 1000000 10000 0.01 1 id 2 ind_1,ind_2,ind_3,ind_4,ind_5,ind_6 inversion_state ind_2
 ```
 ## **Please note:**
 - currently, lines with at least one sample with missing PL data (encoded as '.') are skipped
