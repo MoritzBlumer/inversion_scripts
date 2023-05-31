@@ -79,8 +79,6 @@ def polarize(w_pca_df, mean_threshold, guide_samples):
     more comparable between chromosomes)
     '''
 
-
-
     # if guide_samples not manually specified, select the var_threshold samples with the least 
     # variance, and from those the mean_threshold samples with the highest absolute value accross 
     # all windows as guide samples to calibrate the orientation of all windows
