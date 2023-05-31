@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
-# Moritz Blumer | 2021-12-07 (2023-03-15)
+# Moritz Blumer | 2023-03-15
 #
-# Conduct sliding window PCA with scikit-allel 
+# Conduct sliding window PCA with PCAngsd
 
 
 
@@ -11,7 +11,7 @@
 
 ## File info
 __author__ = 'Moritz Blumer, 2023'
-__version__ = '2.0'
+__version__ = '1.0'
 __email__ = 'lmb215@cam.ac.uk'
 
 
@@ -160,7 +160,7 @@ def pcangsd(w_gl_arr, min_maf_arr, w_start, w_size, n_threads):
             file=sys.stderr, flush=True,
         )
 
-        empty_array = [None] * (len(w_gl_arr[0])//2)
+        empty_array = [None] * (w_gt_arr.shape[1]//2)
         out = [
             empty_array,
             empty_array,
