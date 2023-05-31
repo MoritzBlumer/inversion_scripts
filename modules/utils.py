@@ -152,7 +152,7 @@ def polarize(w_pca_df, mean_threshold, guide_samples):
     return w_pca_df
 
 
-def annotate(w_df, metadata_df, value_id):
+def annotate(w_df, metadata_df, value_col_name):
     '''
     Pivot windowed pca output and annotate with metadata
     '''
@@ -169,7 +169,7 @@ def annotate(w_df, metadata_df, value_id):
         w_df,
         id_vars=metadata_df.columns,
         var_name='window_mid',
-        value_name=value_id,
+        value_name=value_col_name,
     )
 
     return w_anno_df
