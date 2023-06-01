@@ -165,8 +165,8 @@ _Calculate per sample-heterozygosity rate in windows_
 
 <br />
 
-![example_pca_plot](.media/windowed_pca.png)
-![example_pca_stats_plot](.media/windowed_pca_stats.png)
+![example_heterozygosity_plot](.media/windowed_heterozygosity.png)
+![example_heterozygosity_stats_plot](.media/windowed_heterozygosity_stats.png)
 
 
 ## **Overview**
