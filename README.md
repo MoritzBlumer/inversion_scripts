@@ -15,7 +15,8 @@ _Conduct PCAs in in genomic windows (using scikit-allel)_
 
 <br />
 
-![example_plot](.media/windowed_pca.png)
+![example_pca_plot](.media/windowed_pca.png)
+![example_pca_stats_plot](.media/windowed_pca_stats.png)
 
 
 ## **Overview**
@@ -164,7 +165,8 @@ _Calculate per sample-heterozygosity rate in windows_
 
 <br />
 
-![example_plot](.media/windowed_het.png)
+![example_pca_plot](.media/windowed_pca.png)
+![example_pca_stats_plot](.media/windowed_pca_stats.png)
 
 
 ## **Overview**
