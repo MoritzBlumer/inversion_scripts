@@ -213,7 +213,7 @@ windowed_heterozygosity.py <variant file> <metadata> <output prefix> <region> <w
 ```
 windowed_heterozygosity.py test_dataset/input/sample.vcf.gz test_dataset/input/metadata.tsv test_dataset/output/heterozygosity_test_vcf_gt chr1:1-33000000 1000000 10000 10000 species species_1,species_2 inversion_state
 ```
---> counts heterozygous sites in overlapping **window size** = 1000000 bp windows and scale the per-window heterozygosity rate to het sites per **het rate scale** = 100000 bp.
+--> counts heterozygous sites in overlapping 1000000 bp windows and scale the per-window heterozygosity rate to het sites per 100000 bp.
 
 *This generates six output files*
 
