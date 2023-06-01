@@ -110,7 +110,7 @@ _Additional comments:_
 <br />
 
 # **```windowed_pcangsd.py```**
-_Conduct PCAs on genotype likelihoods in in genomic windows (using PCAngsd)_
+_Conduct PCAs on genotype likelihoods in genomic windows (using PCAngsd)_
 
 ## **Overview**
 - nearly the same as windowed_pca.py, but instead of scikit-allel depends on PCAngsd (Meisner & Albrechtsen, 2018) to conduct windowed PCAs on genotype likelihoods
