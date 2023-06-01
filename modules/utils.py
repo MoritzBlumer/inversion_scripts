@@ -406,3 +406,122 @@ def plot_pca_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per
     )
 
     return fig
+
+
+def plot_het_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w, \
+                        variant_file_sample_lst):
+    '''
+    Plot per windowstats: # missing sites per sample per window & # of variants per window
+    '''
+    
+    # for simplicity
+    go = plotly.graph_objects
+    
+    # initialize figure
+    fig = ps.make_subplots(
+        specs=[[{'secondary_y': True}]],
+        x_title='<b>Genomic position<b>',
+        subplot_titles=[
+            '<b>Per window stats of ' + chrom + ':' + str(start) + '-' + str(stop) + 
+            '</b><br> (window size: ' + str(w_size) + ' bp, window step: ' + str(w_step) + ' bp)'
+        ],
+    )
+
+    # split n_miss_per_sample into individual columns
+    w_stats_df[variant_file_sample_lst] = w_stats_df['n_miss_per_sample'].str.split(',',expand=True)
+
+    # pc_1 variance explained
+    for id in variant_file_sample_lst:
+        fig.add_trace(
+            go.Scatter(
+                x=w_stats_df.index,
+                y=w_stats_df[id],
+                name=id,
+                mode='lines',
+                line=dict(color='grey', width=1),
+                showlegend = False,
+                connectgaps=True,
+            ),
+            secondary_y=False,
+        )
+
+    # dummy trace to show represent data in legend
+    fig.add_trace(
+        go.Scatter(
+            x=[None],
+            y=[None],
+            mode="lines",
+            name="per sample missingness",
+            line=dict( color='grey', width=1),
+        )
+    )
+
+    # number of variants per window
+    fig.add_trace(
+        go.Scatter(
+            x=w_stats_df.index,
+            y=w_stats_df['n_variants'],
+            name='# variants',
+            mode='lines',
+            line=dict(color='#595959', dash='dot', width=1)
+        ),
+        secondary_y=True,
+    )
+    
+    # horizontal line to show min_var_per_w threshold
+    fig.add_trace(
+        go.Scatter(
+            x=[start, stop],
+            y=[min_var_per_w, min_var_per_w],
+            mode='lines',
+            line=dict(color='#595959', dash='dot', width=1),
+            hoverinfo='skip',
+            showlegend=False
+        ),
+        secondary_y=True,
+    )
+
+    # add annotation for min_var_per_w line
+    fig.add_trace(go.Scatter(
+        x=[stop],
+        y=[min_var_per_w-0.05*min_var_per_w],
+        mode='lines+text',
+        text=['min # of variants threshold '],
+        textposition='top left',
+        textfont=dict(color=['#595959']),
+        showlegend=False,
+        ),
+        secondary_y=True,
+    )
+
+    # set x axis range
+    fig.update_xaxes(
+        range=[start, stop],
+    )
+    
+    # set y axes ranges and titles
+    max_miss = int(w_stats_df[variant_file_sample_lst].to_numpy().max())
+    fig.update_yaxes(
+        range=[0, max_miss+1],
+        title_text='<b># missing sites per sample per window',
+        secondary_y=False
+    )
+    fig.update_yaxes(
+        title_text='<b># variants per window</b>',
+        secondary_y=True
+    )
+
+    # adjust layout
+    fig.update_layout(
+        template='simple_white',
+        font_family='Arial', font_color='black',
+        autosize=False,
+        width=(stop-start)/config.plot_scaling_factor, height=500,
+        xaxis=dict(ticks='outside', mirror=True, showline=True),
+        yaxis=dict(ticks='outside', mirror=True, showline=True),
+        legend={'traceorder':'normal'},
+        title={'xanchor': 'center', 'y': 0.9, 'x': 0.45},
+        hovermode='closest',
+    )
+
+    return fig
