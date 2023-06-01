@@ -32,7 +32,7 @@ _Conduct PCAs in in genomic windows (using scikit-allel)_
 - pandas (https://anaconda.org/anaconda/pandas)
 - numba (https://anaconda.org/anaconda/numba)
 
---> easy to obtain using conda
+   --> easy to obtain using conda
 
 
 ## **Usage**
@@ -40,7 +40,7 @@ _Conduct PCAs in in genomic windows (using scikit-allel)_
 *Please refer to the Input Files section below to for file format specifiections.*
 
 ```
-python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size> <window step> <minor allel frequency> <pc> <filter column name> <filter column value> <color column name> <guide samples>
+windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size> <window step> <minor allel frequency> <pc> <filter column name> <filter column value> <color column name> <guide samples>
 ```
 
 *Help message*
@@ -67,7 +67,7 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wind
 
 *Usage example based on the supplied test dataset:*
 ```
-python3 windowed_pca.py test_dataset/input/sample.vcf.gz test_dataset/input/metadata.tsv test_dataset/output/pca_test_vcf_gt chr1:1-33000000 1000000 10000 None 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6 inversion_state ind_2
+windowed_pca.py test_dataset/input/sample.vcf.gz test_dataset/input/metadata.tsv test_dataset/output/pca_test_vcf_gt chr1:1-33000000 1000000 10000 None 1 id ind_1,ind_2,ind_3,ind_4,ind_5,ind_6 inversion_state ind_2
 ```
 
 
@@ -75,13 +75,13 @@ python3 windowed_pca.py test_dataset/input/sample.vcf.gz test_dataset/input/meta
 
 
 1. Windowed PCA:
-    1. ```${output_prefix}.w_pc_${pc}.tsv.gz``` contains all information relevant to the windowed PCA plots: it provides the value per principal component per window per individual, as well as all metadata and is used for plotting. It is also the file to be used for any custom plotting.
-    2. ```${output_prefix}.pc_${pc}.${color_column_name}.html```: interactive HTML plot of the windowed PCA results, based on ```${output_prefix}.${chromosome_name}.pc_1.tsv```. if more than one color_column_name was specified, additional versions of this plot will be produced.
-    3. ```${output_prefix}.pc_${pc}.${color_column_name}.pdf```: like the HTML file(s), just as PDF(s)
+    1. ```${output_prefix}.w_pc_${pc}.tsv.gz``` contains PC value per window per individual.
+    2. ```${output_prefix}.pc_${pc}.${color_column_name}.html```: interactive HTML plot of the windowed PCA results. If more than one color_column_name was specified, one plot per specified value is produced that differs in the applied color scheme, respectively.
+    3. ```${output_prefix}.pc_${pc}.${color_column_name}.pdf```: PDF version(s) of ```${output_prefix}.pc_${pc}.${color_column_name}.html```
 2. Supplementary info:
     1. ```${output_prefix}.w_stats.tsv.gz```: contains per window stats on the PCA results per window: % explained PC 1, % explained PC 2, # of included sites per window.
-    2. ```${output_prefix}.w_stats.html```: interactive HTML plot of this per windows stats
-    3. ```${output_prefix}.w_stats.pdf```: same as interactive HTML, just PDF
+    2. ```${output_prefix}.w_stats.html```: interactive HTML plot of window stats
+    3. ```${output_prefix}.w_stats.pdf```: PDF version of ```${output_prefix}.w_stats.html```
 
 
 ## **Please note:**
@@ -126,7 +126,7 @@ _Conduct PCAs on genotype likelihoods in genomic windows (using PCAngsd)_
 - pandas (https://anaconda.org/anaconda/pandas)
 - numba (https://anaconda.org/anaconda/numba)
 
---> all but PCAngsd can be obtained with conda
+   --> all but PCAngsd can be obtained with conda
 
 ## **Usage**
 
@@ -148,12 +148,91 @@ python3 windowed_pca.py <variant file> <metadata> <output prefix> <region> <wind
 
 *Usage example based on the supplied test dataset, using 4 threads*
 ```
-python3 windowed_pcangsd.py test_dataset/input/sample.pl.tsv.gz test_dataset/input/metadata.tsv test_dataset/output/pca_test_pl_file chr1:1-33000000 1000000 10000 0.01 1 id 2 ind_1,ind_2,ind_3,ind_4,ind_5,ind_6 inversion_state ind_2
+windowed_pcangsd.py test_dataset/input/sample.pl.tsv.gz test_dataset/input/metadata.tsv test_dataset/output/pca_test_pl_file chr1:1-33000000 1000000 10000 0.01 1 id 2 ind_1,ind_2,ind_3,ind_4,ind_5,ind_6 inversion_state ind_2
 ```
 ## **Please note:**
 - currently, lines with at least one sample with missing PL data (encoded as '.') are skipped
 
 *This generates the same output files as described above*
+**********
+
+<br />
+<br />    
+    
+# **```windowed_heterozygosity.py```**
+_Calculate per sample-heterozygosity rate in windows_
+
+<br />
+
+![example_plot](.media/windowed_het.png)
+
+
+## **Overview**
+- useful to explore the variation/divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
+- generates PDF and interactive HTML plots (using plotly)
+- input files: a biallelic VCF and a metadata file (details below) (instead of a VCF, a genotype file can be used as input; see below) 
+
+
+## **Dependencies**
+- plotly (https://anaconda.org/plotly/plotly)
+- gzip (https://anaconda.org/conda-forge/gzip)
+- numpy (https://anaconda.org/anaconda/numpy)
+- pandas (https://anaconda.org/anaconda/pandas)
+   --> easy to obtain using conda
+
+
+## **Usage**
+
+*Please refer to the Input Files section below to for file format specifiections.*
+
+```
+windowed_heterozygosity.py <variant file> <metadata> <output prefix> <region> <window size> <window step> <minor allel frequency> <pc> <filter column name> <filter column value> <color column name> <guide samples>
+```
+
+*Help message*
+<sub><sup>
+
+| Argument | Type | Description |
+| ----------------------- | --- | -------------------------------- | 
+| **variant file**   | str | path to uncompressed or gzipped variant file (VCF or genotype file) |
+| **metadata**          | str | path to the metadata file |
+| **output prefix**     | str | prefix for output files |
+| **region**   | str | target region in format "chr:start-stop" (i.e. chr1:1-$chrom_length to analyze the entire chr1) |
+| **window size**       | int | sliding window size in bp, e.g. '1000000' |
+| **window step** | int | sliding window step size in bp, e.g. '100000' |
+| **het rate scale** | int | scale heterozygosity to the specified number of bases in each window, e.g. "100000" would scale the number of heterozygous sites in each 1000000 bp window to 100000 (divide by 10) |
+| **filter column name** | str | metadata column name to filter for individuals to includede in the analysis, e.g. 'genus' (see <filter column value>) |
+| **filter column value** | str | value to be filtered for in filter column; Setting *filter column name* to 'genus' and *filter column value* to 'Homo' would include all individuals of the genus _Homo_ in the output, while ignoring all others. (a comma-separated list of include values is accepted, e.g. 'Homo,Pan') |
+| **color column name** | str | metadata column to assign colors by in the output plot; if selecting 'genus', all individuals from the same genus will have the same color in the output plots; if specifying a comma-separated list like 'genus,species', one output plot is generated for each color scheme |
+</sup></sub>
+
+
+## **Example command line:**
+
+*Usage example based on the supplied test dataset:*
+```
+windowed_heterozygosity.py test_dataset/input/sample.vcf.gz test_dataset/input/metadata.tsv test_dataset/output/heterozygosity_test_vcf_gt chr1:1-33000000 1000000 10000 10000 species species_1,species_2 inversion_state
+```
+
+
+*This generates six output files*
+
+
+1. Windowed heterozygosity rate:
+    1. ```${output_prefix}.w_het.tsv.gz``` contains contains heterozygosity rate per window per individual.
+    2. ```${output_prefix}.het.${color_column_name}.html```: interactive HTML plot of the windowed heterozygosity rate results. If more than one color_column_name was specified, one plot per specified value is produced that differs in the applied color scheme, respectively.
+    3. ```${output_prefix}.het.${color_column_name}.pdf```: PDF version(s) of ```${output_prefix}.pc_${pc}.${color_column_name}.html```
+2. Supplementary info:
+    1. ```${output_prefix}.w_stats.tsv.gz```: contains per window stats on the heterozygosity rate results per window: # of included sites per window, # missing sites per sample per window.
+    2. ```${output_prefix}.w_stats.html```: interactive HTML plot of window stats
+    3. ```${output_prefix}.w_stats.pdf```: PDF version of ```${output_prefix}.w_stats.html```
+
+_Comments:_
+- file type and compression is inferred from the suffix (*vcf.gz/*gt.tsv.gz)
+- all columns in metadata will be included in hover display in ```${output_prefix}.het.${color_column_name}.html```
+- if output files (TSVs) from a previous run are detected (same output prefix), they will be reused for plotting instead of generating new ones
+- the threshold for the minimum number of SNPs per window is set to 25 and can be adjusted in the modules/config.py
+- in principal, any type of biallelic variants can be used as long as they are encoded as 0 (hom ref), 1 (het), 2 (hom alt), e.g. InDels ≤20 bp instead of SNPs
 **********
 
 <br />
