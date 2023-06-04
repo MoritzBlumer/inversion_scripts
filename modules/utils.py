@@ -409,7 +409,7 @@ def plot_pca_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per
 
 
 def plot_het_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per_w, \
-                        variant_file_sample_lst):
+                        sample_lst):
     '''
     Plot per windowstats: # missing sites per sample per window & # of variants per window
     '''
@@ -428,10 +428,10 @@ def plot_het_w_stats(w_stats_df, chrom, start, stop, w_size, w_step, min_var_per
     )
 
     # split n_miss_per_sample into individual columns
-    w_stats_df[variant_file_sample_lst] = w_stats_df['n_miss_per_sample'].str.split(',',expand=True)
+    w_stats_df[sample_lst] = w_stats_df['n_miss_per_sample'].str.split(',',expand=True)
 
     # pc_1 variance explained
-    for id in variant_file_sample_lst:
+    for id in sample_lst:
         fig.add_trace(
             go.Scatter(
                 x=w_stats_df.index,
