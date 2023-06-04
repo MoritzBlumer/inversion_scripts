@@ -331,7 +331,7 @@ def main():
         chrom, start, stop,
         w_size, w_step,
         config.min_var_per_w,
-        variant_file_sample_lst,
+        metadata.id.to_list(),
     )
     w_stats_fig.write_html(
         w_stats_fig_html_path
