@@ -116,7 +116,6 @@ def count_hets(w_gt_arr, w_start, w_size):
     w_stats_lst.append([n_variants, n_miss_str])
 
 
-
 def windowed_het(variant_file_path, chrom, start, stop, metadata_df, w_size, w_step, count_hets):
     '''
     Window-by-window analysis
