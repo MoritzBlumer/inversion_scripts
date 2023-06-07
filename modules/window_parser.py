@@ -78,7 +78,7 @@ def gl_min_maf_filter(w_gl_arr, min_maf, n_threads):
 
 def gt_process_win(win, w_start, w_size, min_maf, func):
     '''
-    Remove POS info,convert to numpy array, apply minMAF filter and return empty array if there are 
+    Remove POS info, convert to numpy array, apply minMAF filter and return empty array if there are 
     no variants. Call target function: func(w_gt_arr, w_start, w_size)
     '''
 
@@ -240,7 +240,6 @@ def win_gt_file(variant_file_path, chrom, start, stop, target_sample_lst, w_size
                     w_idx, win,
                     w_size, w_step)
                 
-
             # append pos (and genotypes) to current window if larger than window start
             if pos > w_start: win.append([pos] + gts)
 
