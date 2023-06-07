@@ -36,9 +36,8 @@ def parse_arguments():
     if len(sys.argv)!= 11:
         print(
             '\n   python windowed_het.py <variant file> <metadata> <output prefix> <region>\n\
-                                <window size> <window step size> <pc> <filter column name>\n\
-                                <filter column value> <color column name>\n\
-                                <guide samples>\n\n\
+                                <window size> <window step size> <het rate scale>\n\
+                                <filter column name> <filter column value> <color column name>\n\n\
             <variant file>           str    path to uncompressed or gzipped variant file\n\
                                             (VCF or genotype file; details -> README)\n\
             <metadata>               str    path to the metadata file (details -> README)\n\
