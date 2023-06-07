@@ -240,7 +240,6 @@ def win_gt_file(variant_file_path, chrom, start, stop, target_sample_lst, w_size
                     w_idx, win,
                     w_size, w_step)
                 
-
             # append pos (and genotypes) to current window if larger than window start
             if pos > w_start: win.append([pos] + gts)
 
