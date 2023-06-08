@@ -152,7 +152,7 @@ windowed_pcangsd.py test_dataset/input/sample.pl.tsv.gz test_dataset/input/metad
 ## **Please note:**
 - currently, lines with at least one sample with missing PL data (encoded as '.') are skipped
 
-*This generates the same output files as described above*
+*This generates the same output files as described above for ```windowed_pca.py```*
 **********
 
 <br />
