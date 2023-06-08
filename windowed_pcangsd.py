@@ -161,7 +161,7 @@ def pcangsd(w_gl_arr, min_maf_arr, w_start, w_size, n_threads):
             file=sys.stderr, flush=True,
         )
 
-        empty_array = [None] * (w_gt_arr.shape[1]//2)
+        empty_array = [None] * (w_gl_arr.shape[1]//2)
         out = [
             empty_array,
             empty_array,
