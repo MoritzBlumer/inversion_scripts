@@ -81,6 +81,10 @@ def parse_arguments():
     start = region.split(':')[1].split('-')[0]
     stop = region.split(':')[1].split('-')[1]
 
+    # handle 'None' input
+    taxon = None if taxon == 'None' else taxon
+    group = None if group == 'None' else group
+
     # change str to int where appropriate
     start, stop, w_size, w_step, het_rate_scale = int(start), int(stop), int(w_size), int(w_step), \
         int(het_rate_scale)

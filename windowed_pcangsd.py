@@ -97,6 +97,10 @@ def parse_arguments():
     start = region.split(':')[1].split('-')[0]
     stop = region.split(':')[1].split('-')[1]
 
+    # handle 'None' input
+    taxon = None if taxon == 'None' else taxon
+    group = None if group == 'None' else group
+
     # change str to int where appropriate
     start, stop, w_size, w_step, pc, n_threads = int(start), int(stop), int(w_size), int(w_step), \
         int(pc), int(n_threads)

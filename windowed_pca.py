@@ -80,11 +80,15 @@ def parse_arguments():
     # fetch arguments    
     _, variant_file_path, metadata_path, output_prefix, region, w_size, w_step, min_maf, pc, \
         taxon, group, color_taxon, guide_samples = sys.argv
-    
+
     # fetch chrom, start, stop from regions string
     chrom = region.split(':')[0]
     start = region.split(':')[1].split('-')[0]
     stop = region.split(':')[1].split('-')[1]
+
+    # handle 'None' input
+    taxon = None if taxon == 'None' else taxon
+    group = None if group == 'None' else group
 
     # change str to int where appropriate
     start, stop, w_size, w_step, pc = int(start), int(stop), int(w_size), int(w_step), int(pc)
