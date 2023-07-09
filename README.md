@@ -3,6 +3,7 @@
 *This is becoming a collection of scripts to investigate genetic structure along the genome.*
 
 *If you find any of this useful and use it for your work, please consider citing this repository.*
+[![DOI](https://zenodo.org/badge/506194271.svg)](https://zenodo.org/badge/latestdoi/506194271)
 
 *For questions/problems: lmb215@cam.ac.uk*
 **********
