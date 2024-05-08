@@ -53,6 +53,7 @@ def read_metadata(metadata_path, variant_file_sample_lst, taxon=None, group=None
     metadata_df = pd.read_csv(
         metadata_path,
         sep='\t',
+        dtype=str,
     )
 
     # re-name first column to 'id' (this is the only required column and must have unique ids)
