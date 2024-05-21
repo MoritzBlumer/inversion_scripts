@@ -267,13 +267,13 @@ sample_ids='ind_1,ind_2,ind_3,ind_4,ind_5,ind_6,ind_7,ind_8,ind_9'
 ```
 ```
 # derive header for GT file from VCF
-bcftools query -s $samples -f 'CHROM\tPOS[\t%SAMPLE]\n' sample.vcf.gz | head -n 1 | gzip -c > sample.gt.tsv.gz
+bcftools query -s $sample_ids -f 'CHROM\tPOS[\t%SAMPLE]\n' sample.vcf.gz | head -n 1 | gzip -c > sample.gt.tsv.gz
 
 # convert VCF rows to GT file rows 
 # - keep only lines without missing genotype calls
 # - keep only biallelic SNPs that passed all filters
 # - drop unnecessary VCF info (FORMAT, INFO columns)
-bcftools view -s $samples -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS sample.vcf.gz | bcftools query -f '%CHROM\t%POS[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 's|0/1|1|g' | sed 's|1/0|1|g' | gzip -c >> sample.gt.tsv.gz
+bcftools view -s $sample_ids -v snps -i 'F_MISSING=0' -m2 -M2 -f PASS sample.vcf.gz | bcftools query -f '%CHROM\t%POS[\t%GT]\n' | sed 's|\./\.|-1|g' | sed 's|0/0|0|g' | sed 's|1/1|2|g' | sed 's|0/1|1|g' | sed 's|1/0|1|g' | gzip -c >> sample.gt.tsv.gz
 ```
 Have a look at the first rows of the GT file:
 ```
@@ -292,12 +292,12 @@ chr1    87602   0       0       0       0       0       0
 Likewise, a PL or GL file can be created, if the respective field is present in a VCF, below this is shown for PL, but GL would work the same (simply replace 'PL' with 'GL'):
 ```
 # derive header for PL file from VCF (3 columns per sample)
-bcftools query -s $samples -f 'CHROM\tPOS[\t%SAMPLE\t%SAMPLE\t%SAMPLE]\n' sample.vcf.gz | head -n 1 | gzip -c > sample.pl.tsv.gz
+bcftools query -s $sample_ids -f 'CHROM\tPOS[\t%SAMPLE\t%SAMPLE\t%SAMPLE]\n' sample.vcf.gz | head -n 1 | gzip -c > sample.pl.tsv.gz
 
 # convert VCF rows to PL file rows
 # - this doesn't have to be limited to PASS sites and can include sites with missing called genotypes
 # - drop unnecessary VCF info (FORMAT, INFO columns)
-bcftools view -s $samples -v snps -m2 -M2 sample.vcf.gz | bcftools query -f '%CHROM\t%POS[\t%PL]\n' | tr ',' '\t' | gzip -c >> sample.pl.tsv.gz
+bcftools view -s $sample_ids -v snps -m2 -M2 sample.vcf.gz | bcftools query -f '%CHROM\t%POS[\t%PL]\n' | tr ',' '\t' | gzip -c >> sample.pl.tsv.gz
 ```
 Check out the first rows of the first three samples in the PL file:
 ```
