@@ -22,7 +22,7 @@ _Conduct PCAs in in genomic windows (using scikit-allel)_
 ## **Overview**
 - useful to explore the variation/divergence landscape, and particularly to identify inversion polymorphisms in biallelic variant callsets
 - generates PDF and interactive HTML plots (using plotly)
-- input files: a biallelic VCF and a metadata file (details below) (instead of a VCF, a genotype file can be used as input; see below) 
+- input files: a sorted biallelic VCF and a metadata file (details below) (instead of a VCF, a genotype file can be used as input; see below) 
 
 
 ## **Dependencies**
@@ -49,7 +49,7 @@ windowed_pca.py <variant file> <metadata> <output prefix> <region> <window size>
 
 | Argument | Type | Description |
 | ----------------------- | --- | -------------------------------- | 
-| **variant file**   | str | path to uncompressed or gzipped variant file (VCF or genotype file) |
+| **variant file**   | str | path to (position-sorted) uncompressed or gzipped variant file (VCF or genotype file) |
 | **metadata**          | str | path to the metadata file |
 | **output prefix**     | str | prefix for output files |
 | **region**   | str | target region in format "chr:start-stop" (i.e. chr1:1-$chrom_length to analyze the entire chr1) |
@@ -170,7 +170,7 @@ _Calculate per sample-heterozygosity rate in windows_
 ## **Overview**
 - useful to explore variation in per-sample heterozygosity (# heterozygous site scaled by )
 - generates PDF and interactive HTML plots (using plotly)
-- input files: a biallelic VCF and a metadata file (details below) (instead of a VCF, a genotype file can be used as input; see below) 
+- input files: a sorted biallelic VCF and a metadata file (details below) (instead of a VCF, a genotype file can be used as input; see below) 
 
 
 ## **Dependencies**
@@ -194,7 +194,7 @@ windowed_heterozygosity.py <variant file> <metadata> <output prefix> <region> <w
 
 | Argument | Type | Description |
 | ----------------------- | --- | -------------------------------- | 
-| **variant file**   | str | path to uncompressed or gzipped variant file (VCF or genotype file) |
+| **variant file**   | str | path to sorted uncompressed or gzipped variant file (VCF or genotype file) |
 | **metadata**          | str | path to the metadata file |
 | **output prefix**     | str | prefix for output files |
 | **region**   | str | target region in format "chr:start-stop" (i.e. chr1:1-$chrom_length to analyze the entire chr1) |
@@ -259,7 +259,7 @@ ind_6   19X     species_2       heterozygous
 
 ## **Preparing a GT/PL/GL file from a VCF**
 A file storing only genotypes or likelihoods can be much more space efficient than a full scale VCF. It contains only the chromosome name, position and per sample genotypes (encoded as 0=hom ref, 1=het, 2=hom alt, -1=missing data) or genotype likelihoods (three columns per sample, see https://samtools.github.io/hts-specs/VCFv4.2.pdf).
-Below it is shown how to create such files based on the provided minimal information sample VCF.
+Below it is shown how to create such files based on the provided minimal information sample VCF. The input VCF file must be sorted by position.
 
 ```
 # define a list of samples to be included in the genotype file (e.g if using only a subset of the VCF samples)
