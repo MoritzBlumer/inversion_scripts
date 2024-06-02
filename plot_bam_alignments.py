@@ -301,6 +301,10 @@ def plot_alignments(alignments_lst, r_start, r_stop, q_seq_len, fwd_aln_col, rev
 
     # REVERSE
     if reverse_query:
+
+        # swap colors
+        fwd_aln_col, rev_aln_col = rev_aln_col, fwd_aln_col
+        
         for alignment in alignments_lst:
 
             # aligned to target chromosome
