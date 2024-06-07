@@ -3,6 +3,7 @@
 # Moritz Blumer | 2021-02-07 (2023-05-18)
 #
 # Plot BAM contig or whole genome alignments to a reference sequence (using pysam)
+# (adds 5% of x axis size left and right, and 100 kb thick lines at target and query start and end)
 
 
 ## File info
@@ -185,12 +186,10 @@ def plot_alignments(alignments_lst, r_start, r_stop, q_seq_len, fwd_aln_col, rev
     fig = plt.figure(figsize=(20,10))
     ax = plt.axes()
 
-    # define offsets
-    ax_offset = 0.05 * r_len
-
     # set axis limits
     min_x = min([r_start, q_offset])
     max_x = max([r_stop, q_seq_len-abs(q_offset)])
+    ax_offset = 0.05 * max_x
     ax.set_xlim(min_x - ax_offset, max_x + ax_offset)
     ax.set_ylim(-10, 215)
 
