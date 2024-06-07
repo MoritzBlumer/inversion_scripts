@@ -20,9 +20,9 @@ import matplotlib as mpl
 ## Settings
 
 # set alignment colors
-fwd_aln_col = 'blue'
+fwd_aln_col = 'black'
 rev_aln_col = 'red'
-diff_chrom_col = 'grey'
+diff_chrom_col = 'lightgrey'
 
 
 ## Functions
