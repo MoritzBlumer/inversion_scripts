@@ -187,7 +187,6 @@ def plot_alignments(alignments_lst, r_start, r_stop, q_seq_len, fwd_aln_col, rev
 
     # define offsets
     ax_offset = 0.05 * r_len
-    q_ends_offset = 0.005 * q_seq_len
 
     # set axis limits
     min_x = min([r_start, q_offset])
@@ -276,31 +275,6 @@ def plot_alignments(alignments_lst, r_start, r_stop, q_seq_len, fwd_aln_col, rev
                     linewidth=0,
                 )
 
-        # plot start and end of query as tick lines
-        ax.fill(
-            (
-                q_offset - q_ends_offset,
-                q_offset,
-                q_offset,
-                q_offset - q_ends_offset,
-            ),
-            (201, 201, 149, 149),
-            color = 'k', alpha=1,
-            linewidth=0,
-        )
-        ax.fill(
-            (
-                q_offset + q_seq_len + q_ends_offset,
-                q_offset + q_seq_len,
-                q_offset + q_seq_len,
-                q_offset + q_seq_len + q_ends_offset,
-            ),
-            (201, 201, 149, 149),
-            color = 'k', alpha=1,
-            linewidth=0
-        )
-    
-
     # REVERSE
     if reverse_query:
 
@@ -376,14 +350,36 @@ def plot_alignments(alignments_lst, r_start, r_stop, q_seq_len, fwd_aln_col, rev
                     color=color, alpha=0.4,
                     linewidth=0,
                 )
-                
-        # plot start and end of query as thick lines
+
+        # plot start and end of target and query as tick lines
         ax.fill(
             (
-                q_offset - q_ends_offset,
+                r_start - 100000,
+                r_start,
+                r_start,
+                r_start - 100000,
+            ),
+            (51, 51, -1, -1),
+            color = 'k', alpha=1,
+            linewidth=0,
+        )
+        ax.fill(
+            (
+                r_stop + 100000,
+                r_stop,
+                r_stop,
+                r_stop + 100000,
+            ),
+            (51, 51, -1, -1),
+            color = 'k', alpha=1,
+            linewidth=0
+        )
+        ax.fill(
+            (
+                q_offset - 100000,
                 q_offset,
                 q_offset,
-                q_offset - q_ends_offset
+                q_offset - 100000
             ),
             (201, 201, 149, 149),
             color = 'k', alpha=1,
@@ -391,10 +387,10 @@ def plot_alignments(alignments_lst, r_start, r_stop, q_seq_len, fwd_aln_col, rev
         )
         ax.fill(
             (
-                q_offset + q_seq_len + q_ends_offset,
+                q_offset + q_seq_len + 100000,
                 q_offset + q_seq_len,
                 q_offset + q_seq_len,
-                q_offset + q_seq_len + q_ends_offset
+                q_offset + q_seq_len + 100000
             ),
             (201, 201, 149, 149),
             color = 'k', alpha=1,
