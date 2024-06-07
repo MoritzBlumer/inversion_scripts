@@ -190,7 +190,9 @@ def plot_alignments(alignments_lst, r_start, r_stop, q_seq_len, fwd_aln_col, rev
     q_ends_offset = 0.005 * q_seq_len
 
     # set axis limits
-    ax.set_xlim(r_start - ax_offset, r_stop + ax_offset)
+    min_x = min([r_start, q_offset])
+    max_x = max([r_stop, q_seq_len-abs(q_offset)])
+    ax.set_xlim(min_x - ax_offset, max_x + ax_offset)
     ax.set_ylim(-10, 215)
 
     # set axis labels
