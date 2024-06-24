@@ -208,9 +208,9 @@ def plot_alignments(alignments_lst, r_start, r_stop, q_seq_len, fwd_aln_col, rev
             if alignment['r_name'] == r_name:
 
             # if alignment is reverse, adjust plot color and reverse query 
-            color = fwd_aln_col if alignment['q_strand'] == '+' else rev_aln_col
-            if alignment['q_strand'] == '-':
-                alignment['q_start'], alignment['q_end'] = alignment['q_end'], alignment['q_start']
+                color = fwd_aln_col if alignment['q_strand'] == '+' else rev_aln_col
+                if alignment['q_strand'] == '-':
+                    alignment['q_start'], alignment['q_end'] = alignment['q_end'], alignment['q_start']
                 
                 # plot query rectangles
                 ax.fill(
