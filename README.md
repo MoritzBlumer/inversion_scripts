@@ -105,6 +105,7 @@ _Additional comments:_
 - the threshold for the minimum number of SNPs per window is set to 25 and can be adjusted in the modules/config.py
 - in principal, any type of biallelic variants can be used as long as they are encoded as 0 (hom ref), 1 (het), 2 (hom alt), e.g. InDels ≤20 bp instead of SNPs
 - a major challenge for windowed PCAs is that the PCA in each window is conducted independently, and rotation is random (--> noisy plots). The script implements a correction step that aims at polarizing the orientation based on variance and mean of the previous window, using a subset of 'guide samples'. The automatic guide sample selection is not always ideal. Therefore, after the first round of plotting, suited samples can often be visually determined (i.e. samples that never cross y=0). A single guide sample can be sufficient for correct polarization.
+- to adjust the the width of the output plot, change the "plot_scaling_factor" setting in ```modules/modules/config.py``` (try e.g. 20000 if the plots are too squished)
 **********
 
 <br />
